@@ -8,6 +8,8 @@ export const PUBLIC_ROUTES = {
   historias: "/historias",
   preguntasFrecuentes: "/preguntas-frecuentes",
   contacto: "/contacto",
+  avisoDePrivacidad: "/aviso-de-privacidad",
+  terminos: "/terminos",
   ingresar: "/ingresar",
   registro: "/registro"
 } as const;
@@ -42,3 +44,14 @@ export const PUBLIC_NAVIGATION: NavigationItem[] = [
 export const DESKTOP_NAVIGATION: NavigationItem[] = PUBLIC_NAVIGATION.filter(
   (item) => item.href !== PUBLIC_ROUTES.home
 );
+
+export const LEGAL_NAVIGATION: NavigationItem[] = [
+  {
+    label: "Aviso de privacidad",
+    href: PUBLIC_ROUTES.avisoDePrivacidad
+  },
+  {
+    label: "Terminos",
+    href: PUBLIC_ROUTES.terminos
+  }
+];
