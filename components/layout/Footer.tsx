@@ -4,7 +4,7 @@ import { PUBLIC_NAVIGATION } from "@/lib/routes";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-secondary/90 text-foreground">
+    <footer className="border-t border-border bg-secondary text-foreground">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div>
           <p className="font-semibold">{PROJECT.name}</p>

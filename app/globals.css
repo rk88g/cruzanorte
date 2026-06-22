@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+.dark {
   --background: #07111d;
   --foreground: #fff8ea;
   --card: rgba(16, 29, 43, 0.72);
@@ -16,6 +17,34 @@
   --accent: #d7b66a;
   --success: #2e6f5d;
   --danger: #cf5f5f;
+  --overlay: rgba(7, 17, 29, 0.72);
+  --background-gradient:
+    linear-gradient(140deg, rgba(215, 182, 106, 0.1), transparent 32%),
+    linear-gradient(180deg, #0d1a2a 0%, var(--background) 48%, #050c15 100%);
+  --grid-line: rgba(255, 255, 255, 0.035);
+  --grid-line-soft: rgba(255, 255, 255, 0.025);
+}
+
+.light {
+  --background: #f5f2eb;
+  --foreground: #07111d;
+  --card: rgba(255, 253, 247, 0.82);
+  --card-foreground: #07111d;
+  --primary: #0a1726;
+  --primary-foreground: #fff8ea;
+  --secondary: #e8edf1;
+  --muted: #e4e9ed;
+  --muted-foreground: #586474;
+  --border: rgba(7, 17, 29, 0.12);
+  --accent: #b98d35;
+  --success: #2e6f5d;
+  --danger: #b84f4f;
+  --overlay: rgba(245, 242, 235, 0.72);
+  --background-gradient:
+    linear-gradient(140deg, rgba(185, 141, 53, 0.16), transparent 34%),
+    linear-gradient(180deg, #fbf8f1 0%, var(--background) 48%, #e8edf1 100%);
+  --grid-line: rgba(7, 17, 29, 0.055);
+  --grid-line-soft: rgba(7, 17, 29, 0.035);
 }
 
 * {
@@ -24,6 +53,7 @@
 
 html {
   min-height: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -32,9 +62,7 @@ body {
   min-height: 100%;
   margin: 0;
   overflow-x: hidden;
-  background:
-    linear-gradient(140deg, rgba(215, 182, 106, 0.1), transparent 32%),
-    linear-gradient(180deg, #0d1a2a 0%, var(--background) 48%, #050c15 100%);
+  background: var(--background-gradient);
   color: var(--foreground);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -49,8 +77,8 @@ body::before {
   pointer-events: none;
   content: "";
   background:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-soft) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 70%);
 }

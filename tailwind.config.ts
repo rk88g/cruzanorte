@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -22,7 +23,8 @@ const config: Config = {
         border: "var(--border)",
         accent: "var(--accent)",
         success: "var(--success)",
-        danger: "var(--danger)"
+        danger: "var(--danger)",
+        overlay: "var(--overlay)"
       },
       boxShadow: {
         soft: "0 24px 80px rgba(0, 0, 0, 0.24)",

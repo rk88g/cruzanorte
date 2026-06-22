@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils";
 type ButtonLinkProps = {
   children: ReactNode;
   href: string;
+  onClick?: () => void;
   variant?: "primary" | "secondary";
 };
 
 export function ButtonLink({
   children,
   href,
+  onClick,
   variant = "primary"
 }: ButtonLinkProps) {
   return (
@@ -20,9 +22,10 @@ export function ButtonLink({
         variant === "primary" &&
           "bg-primary text-primary-foreground shadow-premium hover:bg-accent",
         variant === "secondary" &&
-          "border border-border bg-card text-foreground shadow-soft backdrop-blur hover:border-primary/60"
+          "border border-border bg-card text-foreground shadow-soft backdrop-blur hover:border-primary"
       )}
       href={href}
+      onClick={onClick}
     >
       {children}
     </Link>
