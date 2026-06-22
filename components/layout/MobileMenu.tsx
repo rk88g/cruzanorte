@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { PUBLIC_NAVIGATION, PUBLIC_ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -101,6 +102,7 @@ export function MobileMenu() {
         </nav>
 
         <div className="mt-auto grid gap-3 pt-8">
+          <ThemeToggle />
           <ButtonLink href={PUBLIC_ROUTES.registro} onClick={() => setIsOpen(false)}>
             Iniciar mi proceso
           </ButtonLink>

@@ -20,9 +20,10 @@ const options = [
 
 type ThemeToggleProps = {
   compact?: boolean;
+  iconOnly?: boolean;
 };
 
-export function ThemeToggle({ compact = false }: ThemeToggleProps) {
+export function ThemeToggle({ compact = false, iconOnly = false }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
 
@@ -40,8 +41,29 @@ export function ThemeToggle({ compact = false }: ThemeToggleProps) {
     return (
       <div
         aria-hidden="true"
-        className="h-11 w-[7.25rem] rounded-full border border-border bg-card"
+        className={cn(
+          "h-11 rounded-full border border-border bg-card",
+          iconOnly ? "w-11" : "w-[5.75rem]"
+        )}
       />
+    );
+  }
+
+  if (iconOnly) {
+    const currentTheme = resolvedTheme === "light" ? "light" : "dark";
+    const nextTheme = currentTheme === "light" ? "dark" : "light";
+    const Icon = currentTheme === "light" ? Sun : Moon;
+
+    return (
+      <button
+        aria-label={`Tema actual ${currentTheme}. Cambiar a modo ${nextTheme}`}
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-accent shadow-soft transition hover:border-primary hover:text-foreground"
+        onClick={() => setTheme(nextTheme)}
+        title={`Cambiar a modo ${nextTheme}`}
+        type="button"
+      >
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </button>
     );
   }
 
@@ -50,7 +72,7 @@ export function ThemeToggle({ compact = false }: ThemeToggleProps) {
       aria-label="Selector de tema"
       className={cn(
         "inline-flex h-11 items-center rounded-full border border-border bg-card p-1 shadow-soft backdrop-blur-xl",
-        compact ? "w-[7.25rem]" : "w-full sm:w-[8.5rem]"
+        compact ? "w-[5.75rem]" : "w-full sm:w-[8.5rem]"
       )}
       role="group"
     >

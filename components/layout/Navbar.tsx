@@ -37,7 +37,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 lg:hidden">
-          <ThemeToggle compact />
+          <ThemeToggle iconOnly />
           <MobileMenu />
         </div>
       </nav>
