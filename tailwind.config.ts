@@ -10,13 +10,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        graphite: "#171717",
-        platinum: "#f4f1ea",
-        sand: "#d8c7a3",
-        copper: "#a9673f"
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: "var(--card)",
+        "card-foreground": "var(--card-foreground)",
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+        secondary: "var(--secondary)",
+        muted: "var(--muted)",
+        "muted-foreground": "var(--muted-foreground)",
+        border: "var(--border)",
+        accent: "var(--accent)",
+        success: "var(--success)",
+        danger: "var(--danger)"
       },
       boxShadow: {
-        soft: "0 20px 60px rgba(23, 23, 23, 0.08)"
+        soft: "0 24px 80px rgba(0, 0, 0, 0.24)",
+        premium: "0 20px 70px rgba(0, 0, 0, 0.34)"
       }
     }
   },

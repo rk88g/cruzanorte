@@ -1,33 +1,30 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { PROJECT } from "@/lib/constants";
-import { ADMIN_ROUTES, CLIENT_ROUTES, PUBLIC_NAVIGATION } from "@/lib/routes";
+import { CLIENT_ROUTES, PUBLIC_NAVIGATION } from "@/lib/routes";
 
 export function Navbar() {
   return (
-    <header className="border-b border-neutral-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/82 shadow-soft backdrop-blur-xl">
       <nav
         aria-label="Navegacion principal"
         className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"
       >
-        <Link className="flex items-center gap-3 text-graphite" href="/">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-graphite text-white">
+        <Link className="flex items-center gap-3 text-foreground" href="/">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-primary shadow-premium">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="font-semibold tracking-tight">{PROJECT.name}</span>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-neutral-700">
+        <div className="grid w-full grid-cols-2 gap-x-5 gap-y-3 text-sm text-muted-foreground sm:flex sm:w-auto sm:flex-wrap sm:items-center">
           {PUBLIC_NAVIGATION.map((item) => (
-            <Link className="transition hover:text-copper" href={item.href} key={item.href}>
+            <Link className="transition hover:text-primary" href={item.href} key={item.href}>
               {item.label}
             </Link>
           ))}
-          <Link className="font-medium text-graphite transition hover:text-copper" href={CLIENT_ROUTES.panel}>
-            Panel
-          </Link>
-          <Link className="font-medium text-graphite transition hover:text-copper" href={ADMIN_ROUTES.home}>
-            ADMIN
+          <Link className="font-medium text-foreground transition hover:text-primary" href={CLIENT_ROUTES.panel}>
+            Mi proceso
           </Link>
         </div>
       </nav>

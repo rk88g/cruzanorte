@@ -18,9 +18,9 @@ export function ButtonLink({
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition",
         variant === "primary" &&
-          "bg-graphite text-white shadow-soft hover:bg-neutral-800",
+          "bg-primary text-primary-foreground shadow-premium hover:bg-accent",
         variant === "secondary" &&
-          "border border-neutral-300 bg-white text-graphite hover:border-neutral-400"
+          "border border-border bg-card text-foreground shadow-soft backdrop-blur hover:border-primary/60"
       )}
       href={href}
     >

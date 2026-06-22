@@ -23,14 +23,14 @@ const highlights = [
 export default function HomePage() {
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="max-w-3xl">
-        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-copper">
+      <div className="content-shell">
+        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           Cruza Norte
         </p>
-        <h1 className="text-4xl font-semibold tracking-tight text-graphite sm:text-5xl lg:text-6xl">
+        <h1 className="max-w-full text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
           Acompanamiento profesional para procesos de documentacion y seguimiento.
         </h1>
-        <p className="mt-6 max-w-2xl text-base leading-8 text-neutral-700 sm:text-lg">
+        <p className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
           Plataforma en preparacion para organizar servicios, comunicacion y avance
           del proceso con una experiencia clara, seria y confiable.
         </p>
@@ -45,18 +45,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="surface-shell grid gap-4 md:grid-cols-3">
         {highlights.map((item) => {
           const Icon = item.icon;
 
           return (
             <article
-              className="rounded-lg border border-neutral-200 bg-white p-6 shadow-soft"
+              className="rounded-lg border border-border bg-card p-6 shadow-premium backdrop-blur-xl"
               key={item.title}
             >
-              <Icon className="mb-5 h-6 w-6 text-copper" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-graphite">{item.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-neutral-600">
+              <Icon className="mb-5 h-6 w-6 text-primary" aria-hidden="true" />
+              <h2 className="text-lg font-semibold text-card-foreground">{item.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 {item.description}
               </p>
             </article>

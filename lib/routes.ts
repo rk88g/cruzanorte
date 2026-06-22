@@ -16,10 +16,6 @@ export const CLIENT_ROUTES = {
   panel: "/panel"
 } as const;
 
-export const ADMIN_ROUTES = {
-  home: "/admin"
-} as const;
-
 export const PUBLIC_NAVIGATION: NavigationItem[] = [
   {
     label: "Servicios",

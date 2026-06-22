@@ -3,8 +3,6 @@ export type NavigationItem = {
   href: string;
 };
 
-export type UserRole = "client" | "admin";
-
 export type ProcessStatus =
   | "pending_review"
   | "documentation"

@@ -3,8 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8f6f1;
-  --foreground: #171717;
+  --background: #07111d;
+  --foreground: #fff8ea;
+  --card: rgba(16, 29, 43, 0.72);
+  --card-foreground: #fff8ea;
+  --primary: #d7b66a;
+  --primary-foreground: #10131a;
+  --secondary: #111d2b;
+  --muted: #1a2a3c;
+  --muted-foreground: #b8c0ca;
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: #d7b66a;
+  --success: #2e6f5d;
+  --danger: #cf5f5f;
 }
 
 * {
@@ -17,16 +28,68 @@ html {
 }
 
 body {
+  position: relative;
   min-height: 100%;
   margin: 0;
-  background: var(--background);
+  overflow-x: hidden;
+  background:
+    linear-gradient(140deg, rgba(215, 182, 106, 0.1), transparent 32%),
+    linear-gradient(180deg, #0d1a2a 0%, var(--background) 48%, #050c15 100%);
   color: var(--foreground);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 70%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@layer components {
+  .content-shell {
+    width: 100%;
+    max-width: min(21.5rem, calc(100vw - 2.5rem));
+  }
+
+  .surface-shell {
+    width: 100%;
+    max-width: min(21.5rem, calc(100vw - 2.5rem));
+  }
+
+  @media (min-width: 640px) {
+    .content-shell {
+      max-width: 48rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .surface-shell {
+      max-width: none;
+    }
+  }
 }
