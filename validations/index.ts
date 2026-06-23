@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { OTP_CODE_LENGTH, VERIFICATION_CODE_LENGTH } from "@/lib/constants";
 import { buildWhatsappE164 } from "@/lib/phone";
+import { isValidOtpCode, normalizeOtpInput } from "@/lib/otp";
 
 export const whatsappNumberSchema = z
   .string()
@@ -12,11 +13,12 @@ export const whatsappNumberSchema = z
 
 export const verificationCodeSchema = z
   .string()
-  .length(
-    VERIFICATION_CODE_LENGTH,
+  .transform((value) => normalizeOtpInput(value))
+  .refine(
+    (value) => value.length === VERIFICATION_CODE_LENGTH,
     `El codigo debe tener ${VERIFICATION_CODE_LENGTH} digitos.`
   )
-  .regex(/^\d+$/, "El codigo solo debe incluir digitos.");
+  .refine((value) => isValidOtpCode(value), "El codigo debe tener 6 digitos.");
 
 export const phoneOtpRequestSchema = z
   .object({
@@ -43,8 +45,12 @@ export const otpVerificationSchema = phoneOtpRequestSchema.and(
   z.object({
     code: z
       .string()
-      .length(OTP_CODE_LENGTH, `El codigo debe tener ${OTP_CODE_LENGTH} digitos.`)
-      .regex(/^[0-9]+$/, "El codigo debe tener 6 digitos.")
+      .transform((value) => normalizeOtpInput(value))
+      .refine(
+        (value) => value.length === OTP_CODE_LENGTH,
+        `El codigo debe tener ${OTP_CODE_LENGTH} digitos.`
+      )
+      .refine((value) => isValidOtpCode(value), "El codigo debe tener 6 digitos.")
   })
 );
 

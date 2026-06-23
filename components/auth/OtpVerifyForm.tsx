@@ -117,9 +117,9 @@ export function OtpVerifyForm({
             )}
             id="code"
             inputMode="numeric"
-            maxLength={OTP_CODE_LENGTH}
-            pattern="[0-9]*"
-            placeholder="000000"
+            maxLength={20}
+            pattern="[0-9\\s-]*"
+            placeholder="1 2 3 4 5 6"
             {...register("code")}
           />
           {errors.code ? <p className="mt-2 text-sm text-danger">{errors.code.message}</p> : null}

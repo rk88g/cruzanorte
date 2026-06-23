@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OTP_MAX_ATTEMPTS } from "@/lib/constants";
 import {
-  getOtpCodeForRequest,
+  getOtpCodeForEnvironment,
   getOtpExpirationDate,
   hashOtpCode,
   sendWhatsappOtpMock
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createSupabaseAdminClient();
-    const code = getOtpCodeForRequest(request.nextUrl.hostname);
+    const code = getOtpCodeForEnvironment(parsed.data.whatsapp_e164);
     const expiresAt = getOtpExpirationDate();
     const codeHash = hashOtpCode(code, parsed.data.whatsapp_e164);
     const userAgent = request.headers.get("user-agent");

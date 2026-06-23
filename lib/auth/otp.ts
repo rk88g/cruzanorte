@@ -4,6 +4,7 @@ import {
   OTP_EXPIRATION_MINUTES,
   OTP_MAX_ATTEMPTS
 } from "@/lib/constants";
+import { isValidOtpCode } from "@/lib/otp";
 
 type SendWhatsappOtpMockInput = {
   code: string;
@@ -32,15 +33,41 @@ export function generateOtpCode(length = OTP_CODE_LENGTH) {
 function getConfiguredMockOtpCode() {
   const configuredCode = process.env.OTP_TEST_CODE ?? DEFAULT_MOCK_OTP_CODE;
 
-  if (/^\d{6}$/.test(configuredCode)) {
+  if (isValidOtpCode(configuredCode)) {
     return configuredCode;
   }
 
   return DEFAULT_MOCK_OTP_CODE;
 }
 
-export function getOtpCodeForRequest(hostname?: string) {
-  if (isOtpMockModeEnabled(hostname)) {
+function isProductionEnvironment() {
+  return process.env.VERCEL_ENV === "production";
+}
+
+function isOtpAllowedForWhatsapp(whatsapp_e164: string) {
+  const allowedE164 = process.env.OTP_TEST_ALLOWED_E164?.trim();
+
+  return !allowedE164 || allowedE164 === whatsapp_e164;
+}
+
+export function isOtpTestModeEnabled(whatsapp_e164: string) {
+  if (process.env.OTP_TEST_MODE !== "true") {
+    return false;
+  }
+
+  if (!isOtpAllowedForWhatsapp(whatsapp_e164)) {
+    return false;
+  }
+
+  if (isProductionEnvironment() && process.env.OTP_TEST_ALLOW_PRODUCTION !== "true") {
+    return false;
+  }
+
+  return true;
+}
+
+export function getOtpCodeForEnvironment(whatsapp_e164: string) {
+  if (isOtpTestModeEnabled(whatsapp_e164)) {
     return getConfiguredMockOtpCode();
   }
 
@@ -73,16 +100,16 @@ function isLocalHostname(hostname?: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 }
 
-export function isOtpMockModeEnabled(hostname?: string) {
+export function canExposeOtpTestCode(whatsapp_e164: string, hostname?: string) {
   return (
-    process.env.NEXT_PUBLIC_OTP_MOCK_MODE === "true" ||
-    process.env.NODE_ENV !== "production" ||
+    isOtpTestModeEnabled(whatsapp_e164) ||
+    (process.env.NODE_ENV !== "production" && isOtpAllowedForWhatsapp(whatsapp_e164)) ||
     isLocalHostname(hostname)
   );
 }
 
 export async function sendWhatsappOtpMock({ code, hostname, whatsapp_e164 }: SendWhatsappOtpMockInput) {
-  if (isOtpMockModeEnabled(hostname)) {
+  if (canExposeOtpTestCode(whatsapp_e164, hostname)) {
     console.info(`Cruza Norte OTP temporal para ${whatsapp_e164}: ${code}`);
 
     return {
