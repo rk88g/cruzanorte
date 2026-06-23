@@ -20,7 +20,6 @@ type OtpVerifyFormProps = {
   phoneNumber: string;
   whatsappE164: string;
   expiresAt?: string;
-  testCode?: string;
   isResending: boolean;
   onResend: () => Promise<void>;
 };
@@ -30,7 +29,6 @@ export function OtpVerifyForm({
   phoneNumber,
   whatsappE164,
   expiresAt,
-  testCode,
   isResending,
   onResend
 }: OtpVerifyFormProps) {
@@ -97,12 +95,6 @@ export function OtpVerifyForm({
         </div>
       </div>
 
-      {testCode ? (
-        <div className="mt-5 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-foreground">
-          Codigo temporal de prueba: <span className="font-semibold text-primary">{testCode}</span>
-        </div>
-      ) : null}
-
       {expiresAt ? (
         <p className="mt-4 text-sm text-muted-foreground">
           El codigo vence a las {new Date(expiresAt).toLocaleTimeString("es-MX", {
@@ -126,6 +118,7 @@ export function OtpVerifyForm({
             id="code"
             inputMode="numeric"
             maxLength={OTP_CODE_LENGTH}
+            pattern="[0-9]*"
             placeholder="000000"
             {...register("code")}
           />

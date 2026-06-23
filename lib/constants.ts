@@ -145,18 +145,18 @@ export const TIMELINE_STATUSES = [
 export const PHONE_FIELDS_REQUIRED = ["country_code", "phone_number", "whatsapp_e164"] as const;
 
 export const COUNTRY_CODE_OPTIONS = [
-  { label: "Mexico", value: "+52" },
-  { label: "Estados Unidos", value: "+1" },
-  { label: "Colombia", value: "+57" },
-  { label: "Guatemala", value: "+502" },
-  { label: "Honduras", value: "+504" },
-  { label: "El Salvador", value: "+503" },
-  { label: "Nicaragua", value: "+505" },
-  { label: "Costa Rica", value: "+506" },
-  { label: "Panama", value: "+507" },
-  { label: "Venezuela", value: "+58" },
-  { label: "Ecuador", value: "+593" },
-  { label: "Peru", value: "+51" }
+  { label: "🇲🇽 México (+52)", value: "+52" },
+  { label: "🇺🇸 Estados Unidos (+1)", value: "+1" },
+  { label: "🇨🇴 Colombia (+57)", value: "+57" },
+  { label: "🇬🇹 Guatemala (+502)", value: "+502" },
+  { label: "🇭🇳 Honduras (+504)", value: "+504" },
+  { label: "🇸🇻 El Salvador (+503)", value: "+503" },
+  { label: "🇳🇮 Nicaragua (+505)", value: "+505" },
+  { label: "🇨🇷 Costa Rica (+506)", value: "+506" },
+  { label: "🇵🇦 Panamá (+507)", value: "+507" },
+  { label: "🇻🇪 Venezuela (+58)", value: "+58" },
+  { label: "🇪🇨 Ecuador (+593)", value: "+593" },
+  { label: "🇵🇪 Perú (+51)", value: "+51" }
 ] as const;
 
 export const OTP_CODE_LENGTH = 6;

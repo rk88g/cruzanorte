@@ -20,11 +20,10 @@ function getOtpSecret() {
   return secret;
 }
 
-export function generateOtpCode() {
-  const min = 10 ** (OTP_CODE_LENGTH - 1);
-  const max = 10 ** OTP_CODE_LENGTH;
+export function generateOtpCode(length = OTP_CODE_LENGTH) {
+  const max = 10 ** length;
 
-  return String(randomInt(min, max));
+  return String(randomInt(0, max)).padStart(length, "0");
 }
 
 export function hashOtpCode(code: string, whatsapp_e164: string) {
@@ -49,8 +48,12 @@ export function isOtpExpired(expiresAt: string) {
   return new Date(expiresAt).getTime() <= Date.now();
 }
 
+export function isOtpMockModeEnabled() {
+  return process.env.NEXT_PUBLIC_OTP_MOCK_MODE === "true" || process.env.NODE_ENV !== "production";
+}
+
 export async function sendWhatsappOtpMock({ code, whatsapp_e164 }: SendWhatsappOtpMockInput) {
-  if (process.env.NODE_ENV !== "production") {
+  if (isOtpMockModeEnabled()) {
     console.info(`Cruza Norte OTP temporal para ${whatsapp_e164}: ${code}`);
 
     return {

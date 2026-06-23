@@ -2,11 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { MessageCircle, Smartphone } from "lucide-react";
+import { Check, Copy, MessageCircle, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CountryCodeSelect } from "@/components/auth/CountryCodeSelect";
 import { OtpVerifyForm } from "@/components/auth/OtpVerifyForm";
+import { Alert } from "@/components/ui/Alert";
 import { buildWhatsappE164 } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { phoneOtpRequestSchema, type PhoneOtpRequestInput } from "@/validations";
@@ -37,6 +38,7 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
     phoneNumber: ""
   });
   const [isSending, setIsSending] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
   const {
     formState: { errors },
     handleSubmit,
@@ -75,6 +77,7 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
         expiresAt: result.expires_at,
         testCode: result.test_code
       });
+      setCopyStatus("idle");
     } catch {
       setFormError("No pudimos iniciar sesion. Intenta nuevamente.");
     } finally {
@@ -86,6 +89,19 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
   const alternateHref = mode === "register" ? "/ingresar" : "/registro";
   const alternateText =
     mode === "register" ? "Ya tengo cuenta. Ingresar" : "Crear registro inicial";
+
+  async function copyTestCode() {
+    if (!otpState?.testCode) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(otpState.testCode);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("idle");
+    }
+  }
 
   return (
     <section className="px-5 pb-16 sm:px-6 lg:px-8 lg:pb-24">
@@ -141,18 +157,20 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
                 <label className="text-sm font-medium text-foreground" htmlFor="country_code">
                   Codigo de pais
                 </label>
-                <CountryCodeSelect
-                  className={cn("mt-2 w-full", errors.country_code && "border-danger")}
-                  id="country_code"
-                  {...register("country_code", {
-                    onChange: (event) => {
-                      setPhonePreview((current) => ({
-                        ...current,
-                        countryCode: event.target.value
-                      }));
-                    }
-                  })}
-                />
+                <div className="mt-2">
+                  <CountryCodeSelect
+                    className={cn(errors.country_code && "border-danger")}
+                    id="country_code"
+                    {...register("country_code", {
+                      onChange: (event) => {
+                        setPhonePreview((current) => ({
+                          ...current,
+                          countryCode: event.target.value
+                        }));
+                      }
+                    })}
+                  />
+                </div>
                 {errors.country_code ? (
                   <p className="mt-2 text-sm text-danger">{errors.country_code.message}</p>
                 ) : null}
@@ -169,7 +187,9 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
                   )}
                   id="phone_number"
                   inputMode="numeric"
-                  placeholder="3312345678"
+                  maxLength={15}
+                  pattern="[0-9]*"
+                  placeholder="5519876543"
                   {...register("phone_number", {
                     onChange: (event) => {
                       setPhonePreview((current) => ({
@@ -217,6 +237,33 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
             </div>
           </form>
 
+          {otpState?.testCode ? (
+            <Alert title="Codigo temporal de prueba">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-3xl font-semibold tracking-[0.22em] text-primary">
+                    {otpState.testCode}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Este codigo se muestra solo mientras se conecta el envio real por WhatsApp.
+                  </p>
+                </div>
+                <button
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary"
+                  onClick={() => void copyTestCode()}
+                  type="button"
+                >
+                  {copyStatus === "copied" ? (
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Copy className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {copyStatus === "copied" ? "Copiado" : "Copiar"}
+                </button>
+              </div>
+            </Alert>
+          ) : null}
+
           {otpState ? (
             <OtpVerifyForm
               countryCode={otpState.countryCode}
@@ -229,7 +276,6 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
                 })
               }
               phoneNumber={otpState.phoneNumber}
-              testCode={otpState.testCode}
               whatsappE164={otpState.whatsappE164}
             />
           ) : null}
