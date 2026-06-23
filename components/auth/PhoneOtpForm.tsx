@@ -262,6 +262,13 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
                 </button>
               </div>
             </Alert>
+          ) : otpState ? (
+            <Alert title="Codigo solicitado">
+              <p className="text-sm leading-6 text-muted-foreground">
+                En este entorno el codigo temporal no se muestra publicamente. Cuando se conecte el
+                proveedor real, se enviara por WhatsApp.
+              </p>
+            </Alert>
           ) : null}
 
           {otpState ? (

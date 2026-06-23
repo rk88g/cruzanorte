@@ -7,8 +7,11 @@ import {
 
 type SendWhatsappOtpMockInput = {
   code: string;
+  hostname?: string;
   whatsapp_e164: string;
 };
+
+const DEFAULT_MOCK_OTP_CODE = "123456";
 
 function getOtpSecret() {
   const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,6 +27,24 @@ export function generateOtpCode(length = OTP_CODE_LENGTH) {
   const max = 10 ** length;
 
   return String(randomInt(0, max)).padStart(length, "0");
+}
+
+function getConfiguredMockOtpCode() {
+  const configuredCode = process.env.OTP_TEST_CODE ?? DEFAULT_MOCK_OTP_CODE;
+
+  if (/^\d{6}$/.test(configuredCode)) {
+    return configuredCode;
+  }
+
+  return DEFAULT_MOCK_OTP_CODE;
+}
+
+export function getOtpCodeForRequest(hostname?: string) {
+  if (isOtpMockModeEnabled(hostname)) {
+    return getConfiguredMockOtpCode();
+  }
+
+  return generateOtpCode();
 }
 
 export function hashOtpCode(code: string, whatsapp_e164: string) {
@@ -48,12 +69,20 @@ export function isOtpExpired(expiresAt: string) {
   return new Date(expiresAt).getTime() <= Date.now();
 }
 
-export function isOtpMockModeEnabled() {
-  return process.env.NEXT_PUBLIC_OTP_MOCK_MODE === "true" || process.env.NODE_ENV !== "production";
+function isLocalHostname(hostname?: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 }
 
-export async function sendWhatsappOtpMock({ code, whatsapp_e164 }: SendWhatsappOtpMockInput) {
-  if (isOtpMockModeEnabled()) {
+export function isOtpMockModeEnabled(hostname?: string) {
+  return (
+    process.env.NEXT_PUBLIC_OTP_MOCK_MODE === "true" ||
+    process.env.NODE_ENV !== "production" ||
+    isLocalHostname(hostname)
+  );
+}
+
+export async function sendWhatsappOtpMock({ code, hostname, whatsapp_e164 }: SendWhatsappOtpMockInput) {
+  if (isOtpMockModeEnabled(hostname)) {
     console.info(`Cruza Norte OTP temporal para ${whatsapp_e164}: ${code}`);
 
     return {
