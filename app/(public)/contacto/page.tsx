@@ -8,9 +8,15 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { PROJECT } from "@/lib/constants";
 import { PUBLIC_ROUTES } from "@/lib/routes";
 
+const pageDescription =
+  "Contacta a Cruza Norte para recibir orientacion, iniciar tu registro o resolver dudas sobre el proceso.";
+
 export const metadata: Metadata = {
   title: "Contacto",
-  description: "Contacta a Cruza Norte para iniciar tu proceso o resolver dudas."
+  description: pageDescription,
+  alternates: {
+    canonical: "/contacto"
+  }
 };
 
 const contactOptions = [

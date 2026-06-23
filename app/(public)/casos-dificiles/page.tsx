@@ -6,10 +6,15 @@ import { PageCta } from "@/components/sections/PageCta";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 import { PUBLIC_ROUTES } from "@/lib/routes";
 
+const pageDescription =
+  "Acompanamiento para personas que necesitan organizar informacion, revisar documentacion y dar seguimiento cuidadoso a procesos complejos.";
+
 export const metadata: Metadata = {
   title: "Casos dificiles",
-  description:
-    "Acompanamiento para personas que necesitan organizar informacion, documentacion y seguimiento en procesos complejos."
+  description: pageDescription,
+  alternates: {
+    canonical: "/casos-dificiles"
+  }
 };
 
 const caseTypes = [

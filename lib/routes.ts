@@ -55,3 +55,42 @@ export const LEGAL_NAVIGATION: NavigationItem[] = [
     href: PUBLIC_ROUTES.terminos
   }
 ];
+
+export const FOOTER_NAVIGATION: NavigationItem[] = [
+  {
+    label: "Servicios",
+    href: PUBLIC_ROUTES.servicios
+  },
+  {
+    label: "Como funciona",
+    href: PUBLIC_ROUTES.comoFunciona
+  },
+  {
+    label: "Casos dificiles",
+    href: PUBLIC_ROUTES.casosDificiles
+  },
+  {
+    label: "Historias",
+    href: PUBLIC_ROUTES.historias
+  },
+  {
+    label: "Preguntas frecuentes",
+    href: PUBLIC_ROUTES.preguntasFrecuentes
+  },
+  {
+    label: "Contacto",
+    href: PUBLIC_ROUTES.contacto
+  }
+];
+
+export const INDEXABLE_PUBLIC_ROUTES = [
+  PUBLIC_ROUTES.home,
+  PUBLIC_ROUTES.servicios,
+  PUBLIC_ROUTES.comoFunciona,
+  PUBLIC_ROUTES.casosDificiles,
+  PUBLIC_ROUTES.historias,
+  PUBLIC_ROUTES.preguntasFrecuentes,
+  PUBLIC_ROUTES.contacto,
+  PUBLIC_ROUTES.avisoDePrivacidad,
+  PUBLIC_ROUTES.terminos
+] as const;

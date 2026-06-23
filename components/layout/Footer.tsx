@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PROJECT } from "@/lib/constants";
-import { LEGAL_NAVIGATION, PUBLIC_NAVIGATION } from "@/lib/routes";
+import { FOOTER_NAVIGATION, LEGAL_NAVIGATION } from "@/lib/routes";
 
 export function Footer() {
   return (
@@ -14,7 +14,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-4 text-sm text-muted-foreground lg:items-end">
           <div className="flex flex-wrap gap-x-5 gap-y-3">
-            {PUBLIC_NAVIGATION.map((item) => (
+            {FOOTER_NAVIGATION.map((item) => (
               <Link className="transition hover:text-primary" href={item.href} key={item.href}>
                 {item.label}
               </Link>

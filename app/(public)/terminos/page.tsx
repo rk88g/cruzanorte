@@ -13,10 +13,15 @@ import { InternalHero } from "@/components/sections/InternalHero";
 import { PageCta } from "@/components/sections/PageCta";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 
+const pageDescription =
+  "Consulta los terminos de uso iniciales de Cruza Norte para el uso del sitio, registro, documentacion y comunicacion.";
+
 export const metadata: Metadata = {
-  title: "Terminos",
-  description:
-    "Terminos de uso iniciales de Cruza Norte sobre sitio, registro, informacion y seguimiento."
+  title: "Terminos de uso",
+  description: pageDescription,
+  alternates: {
+    canonical: "/terminos"
+  }
 };
 
 const terms = [
@@ -59,7 +64,7 @@ const terms = [
   {
     title: "Limitacion de promesas",
     description:
-      "Cruza Norte no promete resultados garantizados; el servicio se enfoca en acompanamiento y seguimiento.",
+      "Cruza Norte mantiene un alcance responsable; el servicio se enfoca en acompanamiento y seguimiento.",
     icon: ShieldAlert
   },
   {
@@ -84,7 +89,7 @@ export default function TermsPage() {
           <SectionHeading
             eyebrow="Version inicial"
             title="Puntos generales de uso y alcance del servicio."
-            description="Cruza Norte no promete resultados garantizados. El servicio se enfoca en acompanamiento, organizacion de informacion, revision documental y seguimiento del proceso."
+            description="Cruza Norte mantiene un alcance responsable. El servicio se enfoca en acompanamiento, organizacion de informacion, revision documental y seguimiento del proceso."
           />
           <div className="mt-10">
             <InfoGrid items={terms} columns="four" />

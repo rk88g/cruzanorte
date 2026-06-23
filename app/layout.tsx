@@ -6,11 +6,60 @@ import { PROJECT } from "@/lib/constants";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(PROJECT.siteUrl),
   title: {
-    default: PROJECT.name,
+    default: PROJECT.defaultTitle,
     template: `%s | ${PROJECT.name}`
   },
-  description: PROJECT.description
+  description: PROJECT.description,
+  keywords: [...PROJECT.keywords],
+  applicationName: PROJECT.name,
+  creator: PROJECT.name,
+  publisher: PROJECT.name,
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: PROJECT.defaultTitle,
+    description: PROJECT.openGraphDescription,
+    url: PROJECT.siteUrl,
+    siteName: PROJECT.name,
+    locale: "es_MX",
+    type: "website",
+    images: [
+      {
+        url: PROJECT.openGraphImage,
+        width: 1200,
+        height: 630,
+        alt: "Cruza Norte - Tu camino al norte empieza aqui"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: PROJECT.defaultTitle,
+    description: PROJECT.openGraphDescription,
+    images: [PROJECT.openGraphImage]
+  },
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico"
+      },
+      {
+        url: "/icon.png",
+        sizes: "512x512",
+        type: "image/png"
+      }
+    ],
+    apple: [
+      {
+        url: "/apple-icon.png",
+        sizes: "180x180",
+        type: "image/png"
+      }
+    ]
+  }
 };
 
 export default function RootLayout({

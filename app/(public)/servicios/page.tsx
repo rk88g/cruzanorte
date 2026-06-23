@@ -13,10 +13,15 @@ import { ServiceDetailCard } from "@/components/sections/ServiceDetailCard";
 import { InfoGrid } from "@/components/sections/InfoGrid";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 
+const pageDescription =
+  "Conoce los servicios de acompanamiento, documentacion, revision de informacion y seguimiento por etapas de Cruza Norte.";
+
 export const metadata: Metadata = {
   title: "Servicios",
-  description:
-    "Conoce los servicios de acompanamiento, documentacion y seguimiento de Cruza Norte."
+  description: pageDescription,
+  alternates: {
+    canonical: "/servicios"
+  }
 };
 
 const services = [

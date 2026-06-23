@@ -4,10 +4,15 @@ import { InternalHero } from "@/components/sections/InternalHero";
 import { PageCta } from "@/components/sections/PageCta";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 
+const pageDescription =
+  "Resuelve dudas sobre registro, documentacion, seguimiento, comunicacion y funcionamiento de Cruza Norte.";
+
 export const metadata: Metadata = {
   title: "Preguntas frecuentes",
-  description:
-    "Respuestas sobre registro, documentacion, seguimiento y funcionamiento de Cruza Norte."
+  description: pageDescription,
+  alternates: {
+    canonical: "/preguntas-frecuentes"
+  }
 };
 
 const faqs = [
@@ -52,9 +57,9 @@ const faqs = [
       "Esa funcion se definira cuando se implemente el acceso real por WhatsApp y la gestion de cuenta."
   },
   {
-    question: "Los resultados estan garantizados?",
+    question: "Que alcance tiene el acompanamiento?",
     answer:
-      "No. Cada caso es diferente y ningun proceso debe prometer resultados garantizados. En Cruza Norte nos enfocamos en acompanamiento, organizacion, revision de informacion, documentacion y seguimiento claro."
+      "Cada caso es diferente. En Cruza Norte nos enfocamos en acompanamiento, organizacion, revision de informacion, documentacion y seguimiento claro."
   },
   {
     question: "Como se comunican conmigo?",

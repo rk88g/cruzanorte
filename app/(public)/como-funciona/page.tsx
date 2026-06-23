@@ -13,10 +13,15 @@ import { InternalHero } from "@/components/sections/InternalHero";
 import { PageCta } from "@/components/sections/PageCta";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 
+const pageDescription =
+  "Descubre como Cruza Norte organiza cada proceso por etapas para dar seguimiento claro a informacion, documentacion y proximos pasos.";
+
 export const metadata: Metadata = {
   title: "Como funciona",
-  description:
-    "Conoce como se organiza el proceso por etapas dentro de Cruza Norte."
+  description: pageDescription,
+  alternates: {
+    canonical: "/como-funciona"
+  }
 };
 
 const steps = [

@@ -9,11 +9,16 @@ import { ServicesSection } from "@/components/sections/ServicesSection";
 import { TimelinePreviewSection } from "@/components/sections/TimelinePreviewSection";
 import { TrustBar } from "@/components/sections/TrustBar";
 import { WhyChooseSection } from "@/components/sections/WhyChooseSection";
+import { PROJECT } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Tu camino al norte empieza aqui",
-  description:
-    "Acompanamiento profesional para organizar documentacion, revisar informacion y dar seguimiento por etapas a tu proceso."
+  title: {
+    absolute: PROJECT.defaultTitle
+  },
+  description: PROJECT.description,
+  alternates: {
+    canonical: "/"
+  }
 };
 
 export default function HomePage() {

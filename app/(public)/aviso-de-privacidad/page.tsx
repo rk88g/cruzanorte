@@ -5,10 +5,15 @@ import { InternalHero } from "@/components/sections/InternalHero";
 import { PageCta } from "@/components/sections/PageCta";
 import { SectionHeading } from "@/components/sections/SectionHeading";
 
+const pageDescription =
+  "Consulta el aviso de privacidad inicial de Cruza Norte y el uso de informacion para contacto, orientacion y seguimiento.";
+
 export const metadata: Metadata = {
   title: "Aviso de privacidad",
-  description:
-    "Aviso de privacidad inicial de Cruza Norte sobre uso y proteccion de informacion."
+  description: pageDescription,
+  alternates: {
+    canonical: "/aviso-de-privacidad"
+  }
 };
 
 const uses = [

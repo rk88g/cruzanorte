@@ -7,10 +7,15 @@ import { SectionHeading } from "@/components/sections/SectionHeading";
 import { TestimonialGrid } from "@/components/sections/TestimonialGrid";
 import { PUBLIC_ROUTES } from "@/lib/routes";
 
+const pageDescription =
+  "Experiencias de personas que organizaron su proceso con acompanamiento, documentacion ordenada y seguimiento claro.";
+
 export const metadata: Metadata = {
   title: "Historias",
-  description:
-    "Experiencias de personas que organizaron su proceso con seguimiento claro."
+  description: pageDescription,
+  alternates: {
+    canonical: "/historias"
+  }
 };
 
 const testimonials = [
