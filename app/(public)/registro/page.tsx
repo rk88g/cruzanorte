@@ -1,5 +1,12 @@
-import { WhatsappAccessPlaceholder } from "@/components/forms/WhatsappAccessPlaceholder";
+import type { Metadata } from "next";
+import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 import { PageHeader } from "@/components/sections/PageHeader";
+
+export const metadata: Metadata = {
+  title: "Registro por WhatsApp",
+  description:
+    "Inicia tu registro en Cruza Norte con codigo de pais, numero de WhatsApp y verificacion OTP."
+};
 
 export default function RegisterPage() {
   return (
@@ -7,9 +14,9 @@ export default function RegisterPage() {
       <PageHeader
         eyebrow="Registro"
         title="Registro inicial por WhatsApp"
-        description="Este espacio preparara el alta de clientes sin contrasena, usando verificacion por WhatsApp."
+        description="Crea tu acceso sin contrasena usando un codigo de verificacion temporal de 6 digitos."
       />
-      <WhatsappAccessPlaceholder mode="register" />
+      <PhoneOtpForm mode="register" />
     </div>
   );
 }

@@ -1,11 +1,20 @@
-import { PageHeader } from "@/components/sections/PageHeader";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { PanelDashboard } from "@/components/panel/PanelDashboard";
+import { getClientSession } from "@/lib/auth/session";
 
-export default function ClientPanelPage() {
-  return (
-    <PageHeader
-      eyebrow="Panel cliente"
-      title="Avance del proceso"
-      description="Placeholder de intranet para consultar documentacion, acompanamiento, revision y seguimiento del servicio."
-    />
-  );
+export const metadata: Metadata = {
+  title: "Panel cliente",
+  description:
+    "Panel basico protegido para seguimiento claro, documentacion organizada y proximos pasos."
+};
+
+export default async function ClientPanelPage() {
+  const session = await getClientSession();
+
+  if (!session) {
+    redirect("/ingresar");
+  }
+
+  return <PanelDashboard session={session} />;
 }

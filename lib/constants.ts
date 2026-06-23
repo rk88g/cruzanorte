@@ -144,6 +144,21 @@ export const TIMELINE_STATUSES = [
 
 export const PHONE_FIELDS_REQUIRED = ["country_code", "phone_number", "whatsapp_e164"] as const;
 
+export const COUNTRY_CODE_OPTIONS = [
+  { label: "Mexico", value: "+52" },
+  { label: "Estados Unidos", value: "+1" },
+  { label: "Colombia", value: "+57" },
+  { label: "Guatemala", value: "+502" },
+  { label: "Honduras", value: "+504" },
+  { label: "El Salvador", value: "+503" },
+  { label: "Nicaragua", value: "+505" },
+  { label: "Costa Rica", value: "+506" },
+  { label: "Panama", value: "+507" },
+  { label: "Venezuela", value: "+58" },
+  { label: "Ecuador", value: "+593" },
+  { label: "Peru", value: "+51" }
+] as const;
+
 export const OTP_CODE_LENGTH = 6;
 export const OTP_MAX_ATTEMPTS = 3;
 export const OTP_EXPIRATION_MINUTES = 10;

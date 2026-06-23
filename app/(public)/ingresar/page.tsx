@@ -1,5 +1,12 @@
-import { WhatsappAccessPlaceholder } from "@/components/forms/WhatsappAccessPlaceholder";
+import type { Metadata } from "next";
+import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 import { PageHeader } from "@/components/sections/PageHeader";
+
+export const metadata: Metadata = {
+  title: "Ingresar por WhatsApp",
+  description:
+    "Ingresa a tu panel de Cruza Norte con codigo de pais, numero de WhatsApp y verificacion OTP."
+};
 
 export default function SignInPage() {
   return (
@@ -7,9 +14,9 @@ export default function SignInPage() {
       <PageHeader
         eyebrow="Acceso cliente"
         title="Ingreso por WhatsApp"
-        description="El acceso del cliente se realizara con un codigo de verificacion de 6 digitos enviado a un numero WhatsApp con codigo de pais."
+        description="Accede a tu panel con un codigo de verificacion de 6 digitos enviado a tu WhatsApp."
       />
-      <WhatsappAccessPlaceholder mode="signin" />
+      <PhoneOtpForm mode="signin" />
     </div>
   );
 }
