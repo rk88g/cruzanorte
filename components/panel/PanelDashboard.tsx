@@ -2,6 +2,7 @@ import { AccountSummaryCard } from "@/components/panel/AccountSummaryCard";
 import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
 import { NextStepCard } from "@/components/panel/NextStepCard";
 import { QuickActions } from "@/components/panel/QuickActions";
+import type { ClientActiveApplication } from "@/lib/applications";
 import type { ClientSession } from "@/lib/auth/session";
 import {
   APPLICATION_STAGES,
@@ -10,12 +11,13 @@ import {
 } from "@/lib/constants";
 
 type PanelDashboardProps = {
+  activeApplication: ClientActiveApplication | null;
   session: ClientSession;
 };
 
-export function PanelDashboard({ session }: PanelDashboardProps) {
-  const currentStage = DEFAULT_APPLICATION_STAGE;
-  const currentProgress = DEFAULT_APPLICATION_PROGRESS;
+export function PanelDashboard({ activeApplication, session }: PanelDashboardProps) {
+  const currentStage = activeApplication?.current_stage ?? DEFAULT_APPLICATION_STAGE;
+  const currentProgress = activeApplication?.progress ?? DEFAULT_APPLICATION_PROGRESS;
   const currentStageLabel =
     APPLICATION_STAGES.find((stage) => stage.slug === currentStage)?.label ?? "Bienvenida";
 
@@ -44,11 +46,14 @@ export function PanelDashboard({ session }: PanelDashboardProps) {
         <ClientProcessTimeline currentStage={currentStage} progress={currentProgress} />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-          <NextStepCard currentStage={currentStage} />
+          <NextStepCard
+            currentStage={currentStage}
+            hasActiveApplication={Boolean(activeApplication)}
+          />
           <AccountSummaryCard session={session} />
         </div>
 
-        <QuickActions />
+        <QuickActions hasActiveApplication={Boolean(activeApplication)} />
       </div>
     </section>
   );

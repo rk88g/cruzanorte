@@ -1,8 +1,11 @@
 import { ArrowRight, Clock3 } from "lucide-react";
+import Link from "next/link";
+import { CLIENT_ROUTES } from "@/lib/routes";
 import type { ApplicationStage } from "@/types/database";
 
 type NextStepCardProps = {
   currentStage: ApplicationStage;
+  hasActiveApplication: boolean;
 };
 
 type NextStepContent = {
@@ -15,14 +18,14 @@ const NEXT_STEP_BY_STAGE: Record<ApplicationStage, NextStepContent> = {
   bienvenida: {
     title: "Inicia tu registro",
     description:
-      "Completa tu informacion inicial para que el equipo pueda revisar los datos de contacto y el contexto del proceso.",
+      "Completa tu informacion inicial para comenzar a organizar tu proceso.",
     actionLabel: "Comenzar registro"
   },
   informacion_inicial: {
-    title: "Confirma tu informacion",
+    title: "Agregar personas que viajan",
     description:
-      "Revisa que tus datos esten completos y preparados para el seguimiento de la siguiente etapa.",
-    actionLabel: "Revisar informacion"
+      "El siguiente paso sera agregar a las personas incluidas en tu proceso.",
+    actionLabel: "Disponible proximamente"
   },
   fecha_solicitada: {
     title: "Da seguimiento a la fecha solicitada",
@@ -80,8 +83,9 @@ const NEXT_STEP_BY_STAGE: Record<ApplicationStage, NextStepContent> = {
   }
 };
 
-export function NextStepCard({ currentStage }: NextStepCardProps) {
+export function NextStepCard({ currentStage, hasActiveApplication }: NextStepCardProps) {
   const content = NEXT_STEP_BY_STAGE[currentStage];
+  const canStartRegistration = !hasActiveApplication;
 
   return (
     <article className="rounded-2xl border border-border bg-card p-5 shadow-premium backdrop-blur-xl sm:p-6">
@@ -102,17 +106,23 @@ export function NextStepCard({ currentStage }: NextStepCardProps) {
       </p>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground opacity-70 shadow-premium sm:w-auto"
-          disabled
-          type="button"
-        >
-          {content.actionLabel}
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">
-          Disponible proximamente
-        </span>
+        {canStartRegistration ? (
+          <Link
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-premium transition hover:bg-accent sm:w-auto"
+            href={CLIENT_ROUTES.registro}
+          >
+            {content.actionLabel}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        ) : (
+          <button
+            className="inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground opacity-70 shadow-premium sm:w-auto"
+            disabled
+            type="button"
+          >
+            {content.actionLabel}
+          </button>
+        )}
       </div>
     </article>
   );

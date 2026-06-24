@@ -3,6 +3,12 @@ import { OTP_CODE_LENGTH, VERIFICATION_CODE_LENGTH } from "@/lib/constants";
 import { buildWhatsappE164 } from "@/lib/phone";
 import { isValidOtpCode, normalizeOtpInput } from "@/lib/otp";
 
+export {
+  applicationStartSchema,
+  type ApplicationStart,
+  type ApplicationStartInput
+} from "@/validations/application";
+
 export const whatsappNumberSchema = z
   .string()
   .min(1, "Ingresa un numero WhatsApp.")

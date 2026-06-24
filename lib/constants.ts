@@ -91,6 +91,34 @@ export const APPLICATION_STAGES = [
 
 export const DEFAULT_APPLICATION_STAGE: ApplicationStage = "bienvenida";
 export const DEFAULT_APPLICATION_PROGRESS = 5;
+export const APPLICATION_START_STAGE: ApplicationStage = "informacion_inicial";
+export const APPLICATION_START_PROGRESS = 15;
+
+export const PROCESS_REASON_OPTIONS = [
+  "Turismo",
+  "Trabajo",
+  "Asilo politico",
+  "Reunificacion familiar",
+  "Caso dificil",
+  "Revision de informacion",
+  "Otro"
+] as const;
+
+export const APPLICATION_COUNTRY_OPTIONS = [
+  "Mexico",
+  "Estados Unidos",
+  "Guatemala",
+  "Honduras",
+  "El Salvador",
+  "Nicaragua",
+  "Costa Rica",
+  "Panama",
+  "Colombia",
+  "Venezuela",
+  "Ecuador",
+  "Peru",
+  "Otro"
+] as const;
 
 export const APPLICATION_STATUSES = [
   "draft",

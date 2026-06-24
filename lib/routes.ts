@@ -15,7 +15,8 @@ export const PUBLIC_ROUTES = {
 } as const;
 
 export const CLIENT_ROUTES = {
-  panel: "/panel"
+  panel: "/panel",
+  registro: "/panel/registro"
 } as const;
 
 export const PUBLIC_NAVIGATION: NavigationItem[] = [

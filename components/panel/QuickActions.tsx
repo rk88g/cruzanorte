@@ -1,11 +1,8 @@
 import { CreditCard, FileText, MessageSquareText, UserRound, ClipboardList } from "lucide-react";
+import Link from "next/link";
+import { CLIENT_ROUTES } from "@/lib/routes";
 
 const QUICK_ACTIONS = [
-  {
-    title: "Iniciar registro",
-    description: "Informacion inicial del proceso guiado.",
-    icon: ClipboardList
-  },
   {
     title: "Documentacion",
     description: "Archivos y pendientes por revisar.",
@@ -28,7 +25,11 @@ const QUICK_ACTIONS = [
   }
 ];
 
-export function QuickActions() {
+type QuickActionsProps = {
+  hasActiveApplication: boolean;
+};
+
+export function QuickActions({ hasActiveApplication }: QuickActionsProps) {
   return (
     <section className="mt-6">
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -41,6 +42,21 @@ export function QuickActions() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Link
+          className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition hover:border-primary"
+          href={CLIENT_ROUTES.registro}
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
+            <ClipboardList className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="mt-4 text-sm font-semibold text-foreground">Iniciar registro</span>
+          <span className="mt-1 text-xs leading-5 text-muted-foreground">
+            {hasActiveApplication
+              ? "Consulta el estado de tu registro inicial."
+              : "Informacion inicial del proceso guiado."}
+          </span>
+        </Link>
+
         {QUICK_ACTIONS.map((item) => (
           <button
             className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft opacity-80 transition hover:border-primary disabled:cursor-not-allowed"
