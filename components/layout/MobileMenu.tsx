@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { PUBLIC_NAVIGATION, PUBLIC_ROUTES } from "@/lib/routes";
+import { CLIENT_ROUTES, PUBLIC_NAVIGATION, PUBLIC_ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-export function MobileMenu() {
+type MobileMenuProps = {
+  isClientAuthenticated: boolean;
+};
+
+export function MobileMenu({ isClientAuthenticated }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuId = useId();
 
@@ -103,16 +107,42 @@ export function MobileMenu() {
 
         <div className="mt-auto grid gap-3 pt-8">
           <ThemeToggle />
-          <ButtonLink href={PUBLIC_ROUTES.registro} onClick={() => setIsOpen(false)}>
-            Iniciar mi proceso
-          </ButtonLink>
-          <ButtonLink
-            href={PUBLIC_ROUTES.ingresar}
-            onClick={() => setIsOpen(false)}
-            variant="secondary"
-          >
-            Entrar
-          </ButtonLink>
+          {isClientAuthenticated ? (
+            <>
+              <ButtonLink
+                href={CLIENT_ROUTES.panel}
+                onClick={() => setIsOpen(false)}
+                variant="secondary"
+              >
+                Mi panel
+              </ButtonLink>
+              <form action="/api/auth/logout" method="post">
+                <button
+                  className={cn(
+                    "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-soft transition",
+                    "hover:border-primary hover:text-primary"
+                  )}
+                  type="submit"
+                >
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  Cerrar sesion
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <ButtonLink href={PUBLIC_ROUTES.registro} onClick={() => setIsOpen(false)}>
+                Iniciar mi proceso
+              </ButtonLink>
+              <ButtonLink
+                href={PUBLIC_ROUTES.ingresar}
+                onClick={() => setIsOpen(false)}
+                variant="secondary"
+              >
+                Entrar
+              </ButtonLink>
+            </>
+          )}
         </div>
       </aside>
     </div>

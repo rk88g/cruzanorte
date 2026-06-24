@@ -14,6 +14,10 @@ export const PUBLIC_ROUTES = {
   registro: "/registro"
 } as const;
 
+export const CLIENT_ROUTES = {
+  panel: "/panel"
+} as const;
+
 export const PUBLIC_NAVIGATION: NavigationItem[] = [
   {
     label: "Inicio",

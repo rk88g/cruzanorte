@@ -1,91 +1,54 @@
-import { CreditCard, FileText, MessageSquareText, Route, UserRound, ClipboardList } from "lucide-react";
+import { AccountSummaryCard } from "@/components/panel/AccountSummaryCard";
+import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
+import { NextStepCard } from "@/components/panel/NextStepCard";
+import { QuickActions } from "@/components/panel/QuickActions";
 import type { ClientSession } from "@/lib/auth/session";
-
-const panelItems = [
-  {
-    title: "Iniciar registro",
-    description: "Preparar informacion inicial para el proceso guiado.",
-    icon: ClipboardList
-  },
-  {
-    title: "Revisar documentacion",
-    description: "Espacio reservado para documentos y pendientes.",
-    icon: FileText
-  },
-  {
-    title: "Linea de tiempo",
-    description: "Vista futura para consultar avance del proceso.",
-    icon: Route
-  },
-  {
-    title: "Pagos",
-    description: "Modulo reservado para pagos por etapa.",
-    icon: CreditCard
-  },
-  {
-    title: "Mensajes",
-    description: "Comunicacion organizada con el equipo.",
-    icon: MessageSquareText
-  },
-  {
-    title: "Mi perfil",
-    description: "Datos basicos y telefono WhatsApp de la cuenta.",
-    icon: UserRound
-  }
-];
+import {
+  APPLICATION_STAGES,
+  DEFAULT_APPLICATION_PROGRESS,
+  DEFAULT_APPLICATION_STAGE
+} from "@/lib/constants";
 
 type PanelDashboardProps = {
   session: ClientSession;
 };
 
 export function PanelDashboard({ session }: PanelDashboardProps) {
+  const currentStage = DEFAULT_APPLICATION_STAGE;
+  const currentProgress = DEFAULT_APPLICATION_PROGRESS;
+  const currentStageLabel =
+    APPLICATION_STAGES.find((stage) => stage.slug === currentStage)?.label ?? "Bienvenida";
+
   return (
-    <section className="px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
+    <section className="px-5 py-10 sm:px-6 lg:px-8 lg:py-14">
       <div className="mx-auto w-full max-w-6xl">
-        <div className="grid gap-6 rounded-2xl border border-border bg-card p-6 shadow-premium backdrop-blur-xl lg:grid-cols-[1.2fr_0.8fr] lg:p-8">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
               Panel cliente
             </p>
-            <h1 className="mt-4 text-3xl font-semibold text-foreground sm:text-4xl">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Bienvenido a Cruza Norte.
             </h1>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-muted-foreground">
-              Aqui podras dar seguimiento a tu proceso, revisar proximos pasos y mantener
-              tu informacion organizada.
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
+              Consulta el avance del proceso, revisa el siguiente paso y conserva tu
+              informacion organizada en un solo lugar.
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-background/70 p-5">
-            <p className="text-sm text-muted-foreground">WhatsApp registrado</p>
-            <p className="mt-2 text-xl font-semibold text-foreground">{session.whatsapp_e164}</p>
-            <p className="mt-5 inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              Cuenta activa
-            </p>
-            <form action="/api/auth/logout" className="mt-6" method="post">
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary"
-                type="submit"
-              >
-                Cerrar sesion
-              </button>
-            </form>
+          <div className="w-full rounded-2xl border border-border bg-card p-4 shadow-soft backdrop-blur-xl sm:w-auto">
+            <p className="text-xs text-muted-foreground">Etapa actual</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{currentStageLabel}</p>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {panelItems.map((item) => (
-            <article
-              className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl"
-              key={item.title}
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
-                <item.icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h2 className="mt-4 text-lg font-semibold text-foreground">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
-            </article>
-          ))}
+        <ClientProcessTimeline currentStage={currentStage} progress={currentProgress} />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+          <NextStepCard currentStage={currentStage} />
+          <AccountSummaryCard session={session} />
         </div>
+
+        <QuickActions />
       </div>
     </section>
   );

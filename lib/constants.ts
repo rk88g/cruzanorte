@@ -1,3 +1,5 @@
+import type { ApplicationStage } from "@/types/database";
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://cruzanorte.vercel.app";
 
@@ -30,18 +32,65 @@ export const USER_ROLES = ["client", "owner", "advisor", "reviewer", "support"] 
 export const USER_STATUSES = ["active", "inactive", "blocked", "pending"] as const;
 
 export const APPLICATION_STAGES = [
-  "bienvenida",
-  "informacion_inicial",
-  "fecha_solicitada",
-  "fecha_autorizada",
-  "documentacion",
-  "revision_expediente",
-  "preparacion_viaje",
-  "llegada_oficina",
-  "acompanamiento_programado",
-  "en_destino",
-  "bienvenido"
+  {
+    slug: "bienvenida",
+    label: "Bienvenida",
+    progress: 5
+  },
+  {
+    slug: "informacion_inicial",
+    label: "Informacion inicial",
+    progress: 15
+  },
+  {
+    slug: "fecha_solicitada",
+    label: "Fecha solicitada",
+    progress: 25
+  },
+  {
+    slug: "fecha_autorizada",
+    label: "Fecha autorizada",
+    progress: 30
+  },
+  {
+    slug: "documentacion",
+    label: "Documentacion",
+    progress: 45
+  },
+  {
+    slug: "revision_expediente",
+    label: "Revision de expediente",
+    progress: 60
+  },
+  {
+    slug: "preparacion_viaje",
+    label: "Preparacion de viaje",
+    progress: 70
+  },
+  {
+    slug: "llegada_oficina",
+    label: "Llegada a oficina",
+    progress: 80
+  },
+  {
+    slug: "acompanamiento_programado",
+    label: "Acompanamiento programado",
+    progress: 90
+  },
+  {
+    slug: "en_destino",
+    label: "En destino",
+    progress: 97
+  },
+  {
+    slug: "bienvenido",
+    label: "Bienvenido",
+    progress: 100
+  }
 ] as const;
+
+export const DEFAULT_APPLICATION_STAGE: ApplicationStage = "bienvenida";
+export const DEFAULT_APPLICATION_PROGRESS = 5;
 
 export const APPLICATION_STATUSES = [
   "draft",
