@@ -4,7 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import { InternalDateDecisionActions } from "@/components/internal/InternalDateDecisionActions";
 import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
 import { InternalShell } from "@/components/internal/InternalShell";
-import { APPLICATION_STAGES, REQUESTED_DATE_STATUS_LABELS } from "@/lib/constants";
+import {
+  APPLICATION_STAGES,
+  DOCUMENT_STATUS_LABELS,
+  REQUESTED_DATE_STATUS_LABELS
+} from "@/lib/constants";
+import { getDocumentLabel } from "@/lib/documents";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
@@ -121,6 +126,72 @@ export default async function InternalApplicationDetailPage({
             <DetailItem label="Ciudad de origen" value={application.origin_city} />
             <DetailItem label="Motivo del proceso" value={application.process_reason} />
           </div>
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl sm:p-6">
+          <h2 className="text-xl font-semibold text-foreground">Documentacion</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <DetailItem
+              label="Total cargados"
+              value={application.document_summary.uploaded_count}
+            />
+            <DetailItem
+              label="Pendientes"
+              value={application.document_summary.pending_count}
+            />
+            <DetailItem
+              label="En revision"
+              value={application.document_summary.in_review_count}
+            />
+            <DetailItem
+              label="Aceptados"
+              value={application.document_summary.accepted_count}
+            />
+            <DetailItem
+              label="Rechazados"
+              value={
+                application.document_summary.rejected_count +
+                application.document_summary.replacement_requested_count
+              }
+            />
+          </div>
+
+          {application.documents.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Aun no hay documentos cargados.
+            </p>
+          ) : (
+            <div className="mt-5 overflow-x-auto">
+              <table className="min-w-[840px] w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-3 font-semibold">Documento</th>
+                    <th className="px-3 py-3 font-semibold">Archivo</th>
+                    <th className="px-3 py-3 font-semibold">Estado</th>
+                    <th className="px-3 py-3 font-semibold">Fecha de carga</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {application.documents.map((document) => (
+                    <tr key={document.id}>
+                      <td className="px-3 py-3 font-medium text-foreground">
+                        {getDocumentLabel(document.document_type)}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {document.file_name ?? "Sin archivo"}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {DOCUMENT_STATUS_LABELS[document.status]}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {formatDate(document.created_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl sm:p-6">

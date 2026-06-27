@@ -46,10 +46,45 @@ function getNextStepContent(
   }
 
   if (activeApplication.requested_date_status === "approved") {
+    if (
+      activeApplication.document_replacement_requested_count > 0 ||
+      activeApplication.document_rejected_count > 0
+    ) {
+      return {
+        title: "Reemplazo de documento pendiente",
+        description:
+          "Revisa los comentarios y sube una nueva version del documento solicitado.",
+        actionLabel: "Revisar documentacion",
+        actionHref: CLIENT_ROUTES.documentacion
+      };
+    }
+
+    if (
+      activeApplication.required_document_count > 0 &&
+      activeApplication.document_accepted_count >= activeApplication.required_document_count
+    ) {
+      return {
+        title: "Revision de expediente",
+        description:
+          "Tu documentacion fue revisada. El siguiente paso sera la revision del expediente.",
+        actionLabel: "Disponible proximamente"
+      };
+    }
+
+    if (activeApplication.document_pending_review_count > 0) {
+      return {
+        title: "Documentacion en revision",
+        description: "Tus documentos fueron recibidos y estan en revision.",
+        actionLabel: "Revisar documentacion",
+        actionHref: CLIENT_ROUTES.documentacion
+      };
+    }
+
     return {
-      title: "Fecha autorizada",
-      description: "Tu fecha fue autorizada. El siguiente paso sera la documentacion.",
-      actionLabel: "Disponible proximamente"
+      title: "Sube tu documentacion",
+      description: "Carga los documentos solicitados para que puedan ser revisados.",
+      actionLabel: "Revisar documentacion",
+      actionHref: CLIENT_ROUTES.documentacion
     };
   }
 

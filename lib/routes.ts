@@ -19,7 +19,8 @@ export const CLIENT_ROUTES = {
   registro: "/panel/registro",
   personas: "/panel/personas",
   contactoRecibe: "/panel/contacto-recibe",
-  fecha: "/panel/fecha"
+  fecha: "/panel/fecha",
+  documentacion: "/panel/documentacion"
 } as const;
 
 export const PUBLIC_NAVIGATION: NavigationItem[] = [

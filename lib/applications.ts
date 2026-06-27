@@ -1,10 +1,13 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   APPLICATION_START_PROGRESS,
-  APPLICATION_START_STAGE
+  APPLICATION_START_STAGE,
+  MEXICO_REVIEW_DOCUMENT_TYPES,
+  REQUIRED_GENERAL_DOCUMENT_TYPES,
+  REQUIRED_TRAVELER_DOCUMENT_TYPES
 } from "@/lib/constants";
 import type { ApplicationStart } from "@/validations/application";
-import type { ApplicationRow, ApplicationStatus } from "@/types/database";
+import type { ApplicationRow, ApplicationStatus, DocumentStatus } from "@/types/database";
 
 export const ACTIVE_APPLICATION_STATUSES = [
   "draft",
@@ -31,13 +34,26 @@ export type ClientActiveApplication = Pick<
   | "requested_date_notes"
   | "updated_at"
 > & {
+  document_accepted_count: number;
+  document_count: number;
+  document_pending_review_count: number;
+  document_rejected_count: number;
+  document_replacement_requested_count: number;
+  required_document_count: number;
   receiving_contact_exists: boolean;
   travelers_count: number;
 };
 
 type ActiveApplicationRow = Omit<
   ClientActiveApplication,
-  "receiving_contact_exists" | "travelers_count"
+  | "document_accepted_count"
+  | "document_count"
+  | "document_pending_review_count"
+  | "document_rejected_count"
+  | "document_replacement_requested_count"
+  | "receiving_contact_exists"
+  | "required_document_count"
+  | "travelers_count"
 >;
 
 async function getTravelerCountForApplication(applicationId: string) {
@@ -68,14 +84,55 @@ async function hasReceivingContactForApplication(applicationId: string) {
   return (count ?? 0) > 0;
 }
 
+async function getDocumentSummaryForApplication(applicationId: string) {
+  const supabase = createSupabaseAdminClient();
+  const [travelersResult, documentsResult] = await Promise.all([
+    supabase
+      .from("travelers")
+      .select("id, requires_mexico_entry_review")
+      .eq("application_id", applicationId),
+    supabase
+      .from("documents")
+      .select("id, status, file_path")
+      .eq("application_id", applicationId)
+  ]);
+
+  if (travelersResult.error || documentsResult.error) {
+    throw new Error("Could not read document summary.");
+  }
+
+  const travelers = travelersResult.data ?? [];
+  const documents = documentsResult.data ?? [];
+  const mexicoReviewTravelerCount = travelers.filter(
+    (traveler) => traveler.requires_mexico_entry_review
+  ).length;
+  const requiredDocumentCount =
+    REQUIRED_GENERAL_DOCUMENT_TYPES.length +
+    travelers.length * REQUIRED_TRAVELER_DOCUMENT_TYPES.length +
+    mexicoReviewTravelerCount * MEXICO_REVIEW_DOCUMENT_TYPES.length;
+  const countStatus = (statuses: DocumentStatus[]) =>
+    documents.filter((document) => statuses.includes(document.status)).length;
+
+  return {
+    document_accepted_count: countStatus(["accepted"]),
+    document_count: documents.filter((document) => Boolean(document.file_path)).length,
+    document_pending_review_count: countStatus(["uploaded", "in_review"]),
+    document_rejected_count: countStatus(["rejected"]),
+    document_replacement_requested_count: countStatus(["replacement_requested"]),
+    required_document_count: requiredDocumentCount
+  };
+}
+
 async function withTravelerCount(application: ActiveApplicationRow) {
-  const [travelersCount, receivingContactExists] = await Promise.all([
+  const [travelersCount, receivingContactExists, documentSummary] = await Promise.all([
     getTravelerCountForApplication(application.id),
-    hasReceivingContactForApplication(application.id)
+    hasReceivingContactForApplication(application.id),
+    getDocumentSummaryForApplication(application.id)
   ]);
 
   return {
     ...application,
+    ...documentSummary,
     receiving_contact_exists: receivingContactExists,
     travelers_count: travelersCount
   };
@@ -191,7 +248,13 @@ export async function startApplicationForClient(
     status: "created",
     application: {
       ...data,
+      document_accepted_count: 0,
+      document_count: 0,
+      document_pending_review_count: 0,
+      document_rejected_count: 0,
+      document_replacement_requested_count: 0,
       receiving_contact_exists: false,
+      required_document_count: 0,
       travelers_count: 0
     }
   };

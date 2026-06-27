@@ -35,27 +35,39 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
     ? activeApplication.travelers_count >= activeApplication.total_people
     : false;
   const receivingContactIsComplete = Boolean(activeApplication?.receiving_contact_exists);
+  const hasDate = Boolean(activeApplication?.requested_date_id || activeApplication?.approved_date_id);
+  const hasApprovedDate = activeApplication?.requested_date_status === "approved";
   const firstActionHref = !activeApplication
     ? CLIENT_ROUTES.registro
     : !travelersAreComplete
       ? CLIENT_ROUTES.personas
-      : receivingContactIsComplete
-        ? CLIENT_ROUTES.fecha
+      : !receivingContactIsComplete
+        ? CLIENT_ROUTES.contactoRecibe
+        : hasApprovedDate
+          ? CLIENT_ROUTES.documentacion
         : CLIENT_ROUTES.contactoRecibe;
+  const resolvedFirstActionHref =
+    activeApplication && travelersAreComplete && receivingContactIsComplete && !hasApprovedDate
+      ? CLIENT_ROUTES.fecha
+      : firstActionHref;
   const firstActionTitle = !activeApplication
     ? "Iniciar registro"
     : !travelersAreComplete
       ? "Agregar personas"
-      : receivingContactIsComplete
-        ? "Fechas disponibles"
-        : "Contacto que recibe";
+      : !receivingContactIsComplete
+        ? "Contacto que recibe"
+        : hasApprovedDate
+          ? "Documentacion"
+          : "Fechas disponibles";
   const firstActionDescription = !activeApplication
     ? "Informacion inicial del proceso guiado."
     : !travelersAreComplete
       ? "Personas incluidas en el proceso guiado."
-      : receivingContactIsComplete
-        ? "Solicita una fecha para revision."
-        : "Informacion del destino aproximado.";
+      : !receivingContactIsComplete
+        ? "Informacion del destino aproximado."
+        : hasApprovedDate
+          ? "Archivos y estados de revision."
+          : "Solicita una fecha para revision.";
 
   return (
     <section className="mt-6">
@@ -71,7 +83,7 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Link
           className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition hover:border-primary"
-          href={firstActionHref}
+          href={resolvedFirstActionHref}
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
             <ClipboardList className="h-5 w-5" aria-hidden="true" />
@@ -82,22 +94,43 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
           </span>
         </Link>
 
-        {QUICK_ACTIONS.map((item) => (
-          <button
-            className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft opacity-80 transition hover:border-primary disabled:cursor-not-allowed"
-            disabled
-            key={item.title}
-            type="button"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
-              <item.icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="mt-4 text-sm font-semibold text-foreground">{item.title}</span>
-            <span className="mt-1 text-xs leading-5 text-muted-foreground">
-              {item.description}
-            </span>
-          </button>
-        ))}
+        {QUICK_ACTIONS.map((item) => {
+          const isDocumentation = item.title === "Documentacion";
+          const content = (
+            <>
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
+                <item.icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="mt-4 text-sm font-semibold text-foreground">{item.title}</span>
+              <span className="mt-1 text-xs leading-5 text-muted-foreground">
+                {item.description}
+              </span>
+            </>
+          );
+
+          if (isDocumentation && hasDate) {
+            return (
+              <Link
+                className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition hover:border-primary"
+                href={CLIENT_ROUTES.documentacion}
+                key={item.title}
+              >
+                {content}
+              </Link>
+            );
+          }
+
+          return (
+            <button
+              className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft opacity-80 transition hover:border-primary disabled:cursor-not-allowed"
+              disabled
+              key={item.title}
+              type="button"
+            >
+              {content}
+            </button>
+          );
+        })}
       </div>
     </section>
   );

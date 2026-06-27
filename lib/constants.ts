@@ -235,6 +235,110 @@ export const DOCUMENT_STATUSES = [
   "replacement_requested"
 ] as const;
 
+export const DOCUMENT_STATUS_LABELS = {
+  pending: "Pendiente",
+  uploaded: "Cargado",
+  in_review: "En revision",
+  accepted: "Aceptado",
+  rejected: "Rechazado",
+  replacement_requested: "Reemplazo solicitado"
+} as const;
+
+export const DOCUMENT_STATUS_DESCRIPTIONS = {
+  pending: "Aun no se ha subido este documento.",
+  uploaded: "Documento recibido. Esta pendiente de revision.",
+  in_review: "El documento esta siendo revisado.",
+  accepted: "Documento aceptado.",
+  rejected: "El documento requiere atencion. Revisa el comentario.",
+  replacement_requested: "Se solicito cargar una nueva version del documento."
+} as const;
+
+export const GENERAL_DOCUMENT_TYPES = [
+  "general_information",
+  "travel_itinerary",
+  "additional_support",
+  "other"
+] as const;
+
+export const GENERAL_DOCUMENT_LABELS = {
+  general_information: "Informacion general",
+  travel_itinerary: "Itinerario o comprobante de viaje",
+  additional_support: "Soporte adicional",
+  other: "Otro documento"
+} as const;
+
+export const REQUIRED_GENERAL_DOCUMENT_TYPES = [
+  "general_information",
+  "travel_itinerary",
+  "additional_support"
+] as const;
+
+export const TRAVELER_DOCUMENT_TYPES = [
+  "official_id",
+  "passport",
+  "birth_certificate",
+  "recent_photo",
+  "proof_of_address",
+  "travel_ticket",
+  "additional_document"
+] as const;
+
+export const TRAVELER_DOCUMENT_LABELS = {
+  official_id: "Identificacion oficial",
+  passport: "Pasaporte",
+  birth_certificate: "Acta o documento de nacimiento",
+  recent_photo: "Fotografia reciente",
+  proof_of_address: "Comprobante de domicilio",
+  travel_ticket: "Ticket o comprobante de viaje",
+  additional_document: "Documento adicional"
+} as const;
+
+export const REQUIRED_TRAVELER_DOCUMENT_TYPES = [
+  "official_id",
+  "passport",
+  "recent_photo",
+  "additional_document"
+] as const;
+
+export const MEXICO_REVIEW_DOCUMENT_TYPES = [
+  "mexico_visa",
+  "travel_authorization",
+  "identity_document",
+  "flight_ticket",
+  "address_reference",
+  "financial_support",
+  "additional_document"
+] as const;
+
+export const MEXICO_REVIEW_DOCUMENT_LABELS = {
+  mexico_visa: "Visa para Mexico, si aplica",
+  travel_authorization: "Autorizacion o documentacion previa",
+  identity_document: "Documento de identidad",
+  flight_ticket: "Ticket de vuelo",
+  address_reference: "Direccion o referencia",
+  financial_support: "Soporte financiero",
+  additional_document: "Documento adicional"
+} as const;
+
+export const DOCUMENT_SCOPE_LABELS = {
+  application: "Solicitud",
+  traveler: "Persona que viaja",
+  mexico_requirement: "Revision Mexico"
+} as const;
+
+export const DOCUMENT_UPLOAD_MAX_SIZE_BYTES = 10 * 1024 * 1024;
+
+export const DOCUMENT_UPLOAD_ALLOWED_MIME_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp"
+] as const;
+
+export const DOCUMENT_UPLOAD_BUCKET = "documents";
+export const DOCUMENTATION_STAGE: ApplicationStage = "documentacion";
+export const DOCUMENTATION_PROGRESS = 45;
+
 export const PAYMENT_SCOPES = [
   "application",
   "group",

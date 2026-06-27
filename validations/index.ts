@@ -34,6 +34,16 @@ export {
   type RequestApplicationDateInput
 } from "@/validations/availableDate";
 
+export {
+  documentStatusUpdateSchema,
+  documentUploadSchema,
+  type DocumentScope,
+  type DocumentStatusUpdateData,
+  type DocumentStatusUpdateInput,
+  type DocumentUploadData,
+  type DocumentUploadInput
+} from "@/validations/document";
+
 export const whatsappNumberSchema = z
   .string()
   .min(1, "Ingresa un numero WhatsApp.")

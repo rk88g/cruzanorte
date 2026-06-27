@@ -1,8 +1,13 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  getApplicationDocumentSummary,
+  type ClientDocumentationSummary
+} from "@/lib/documents";
 import type {
   ApplicationRow,
   ApplicationStatus,
   AvailableDateRow,
+  DocumentRow,
   ReceivingContactRow,
   TravelerRow,
   UsCityRow,
@@ -60,6 +65,19 @@ export type InternalClientListItem = InternalClient & {
 };
 
 export type InternalApplicationDetail = InternalApplicationListItem & {
+  document_summary: ClientDocumentationSummary;
+  documents: Pick<
+    DocumentRow,
+    | "admin_notes"
+    | "client_notes"
+    | "created_at"
+    | "document_type"
+    | "file_name"
+    | "file_size"
+    | "id"
+    | "status"
+    | "traveler_id"
+  >[];
   receiving_contact: (Pick<
     ReceivingContactRow,
     | "address_reference"
@@ -279,9 +297,10 @@ export async function getInternalApplicationDetail(applicationId: string) {
     return null;
   }
 
-  const [clientsById, datesById, travelersResult] = await Promise.all([
+  const [clientsById, datesById, documentSummary, travelersResult] = await Promise.all([
     getClientsById([application.client_id]),
     getDatesById([application.requested_date_id ?? "", application.approved_date_id ?? ""]),
+    getApplicationDocumentSummary(application.id),
     supabase
       .from("travelers")
       .select(
@@ -346,6 +365,18 @@ export async function getInternalApplicationDetail(applicationId: string) {
       ? datesById.get(application.approved_date_id) ?? null
       : null,
     client: clientsById.get(application.client_id) ?? null,
+    document_summary: documentSummary.summary,
+    documents: documentSummary.documents.map((document) => ({
+      admin_notes: document.admin_notes,
+      client_notes: document.client_notes,
+      created_at: document.created_at,
+      document_type: document.document_type,
+      file_name: document.file_name,
+      file_size: document.file_size,
+      id: document.id,
+      status: document.status,
+      traveler_id: document.traveler_id
+    })),
     requested_date: application.requested_date_id
       ? datesById.get(application.requested_date_id) ?? null
       : null,

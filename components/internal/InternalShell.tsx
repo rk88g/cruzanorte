@@ -1,4 +1,12 @@
-import { BarChart3, CalendarDays, FileText, LogOut, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  BarChart3,
+  CalendarDays,
+  FileText,
+  FolderOpen,
+  LogOut,
+  ShieldCheck,
+  UsersRound
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -19,6 +27,11 @@ const INTERNAL_NAVIGATION = [
     label: "Fechas",
     href: INTERNAL_ROUTES.dates,
     icon: CalendarDays
+  },
+  {
+    label: "Documentos",
+    href: INTERNAL_ROUTES.documents,
+    icon: FolderOpen
   },
   {
     label: "Clientes",
