@@ -139,6 +139,7 @@ export function ApplicationStartForm({ whatsappE164 }: ApplicationStartFormProps
         </div>
 
         <form
+          autoComplete="off"
           className="rounded-2xl border border-border bg-card p-5 shadow-premium backdrop-blur-xl sm:p-6"
           onSubmit={onSubmit}
         >

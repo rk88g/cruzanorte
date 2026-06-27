@@ -116,7 +116,7 @@ export function MobileMenu({ isClientAuthenticated }: MobileMenuProps) {
               >
                 Mi panel
               </ButtonLink>
-              <form action="/api/auth/logout" method="post">
+              <form action="/api/auth/logout" autoComplete="off" method="post">
                 <button
                   className={cn(
                     "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-soft transition",

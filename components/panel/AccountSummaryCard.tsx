@@ -34,7 +34,7 @@ export function AccountSummaryCard({ session }: AccountSummaryCardProps) {
         </div>
       </div>
 
-      <form action="/api/auth/logout" className="mt-5" method="post">
+      <form action="/api/auth/logout" autoComplete="off" className="mt-5" method="post">
         <button
           className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary hover:text-primary"
           type="submit"

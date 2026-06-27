@@ -64,7 +64,7 @@ export function InternalShell({ children, description, title }: InternalShellPro
 
             <div className="flex items-center gap-2">
               <ThemeToggle iconOnly />
-              <form action="/api/internal/logout" method="post">
+              <form action="/api/internal/logout" autoComplete="off" method="post">
                 <button
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary hover:text-primary"
                   type="submit"

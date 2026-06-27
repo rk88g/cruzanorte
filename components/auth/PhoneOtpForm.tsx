@@ -135,6 +135,7 @@ export function PhoneOtpForm({ mode }: PhoneOtpFormProps) {
 
         <div className="space-y-6">
           <form
+            autoComplete="off"
             className="rounded-2xl border border-border bg-card p-5 shadow-premium backdrop-blur-xl sm:p-6"
             onSubmit={onSubmit}
           >

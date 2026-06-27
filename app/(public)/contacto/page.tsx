@@ -82,7 +82,10 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <form className="rounded-[2rem] border border-border bg-card p-6 shadow-premium backdrop-blur-xl sm:p-8">
+          <form
+            autoComplete="off"
+            className="rounded-[2rem] border border-border bg-card p-6 shadow-premium backdrop-blur-xl sm:p-8"
+          >
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent">
               Formulario visual
             </p>

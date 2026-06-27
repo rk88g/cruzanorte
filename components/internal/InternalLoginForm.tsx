@@ -65,13 +65,13 @@ export function InternalLoginForm() {
           solicitudes en modo solo lectura.
         </p>
 
-        <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+        <form autoComplete="off" className="mt-7 space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="text-sm font-medium text-foreground" htmlFor="internal_email">
               Correo
             </label>
             <input
-              autoComplete="email"
+              autoComplete="off"
               className="mt-2 min-h-12 w-full rounded-lg border border-border bg-background px-4 text-sm text-foreground shadow-soft outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
               id="internal_email"
               onChange={(event) => setEmail(event.target.value)}
@@ -87,7 +87,7 @@ export function InternalLoginForm() {
               Contrasena
             </label>
             <input
-              autoComplete="current-password"
+              autoComplete="off"
               className="mt-2 min-h-12 w-full rounded-lg border border-border bg-background px-4 text-sm text-foreground shadow-soft outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
               id="internal_password"
               onChange={(event) => setPassword(event.target.value)}

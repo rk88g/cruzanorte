@@ -105,7 +105,7 @@ export function OtpVerifyForm({
         </p>
       ) : null}
 
-      <form className="mt-6 space-y-5" onSubmit={onSubmit}>
+      <form autoComplete="off" className="mt-6 space-y-5" onSubmit={onSubmit}>
         <div>
           <label className="text-sm font-medium text-foreground" htmlFor="code">
             Codigo de verificacion
