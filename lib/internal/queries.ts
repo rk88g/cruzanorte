@@ -75,6 +75,7 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     | "file_name"
     | "file_size"
     | "id"
+    | "mexico_requirement_id"
     | "status"
     | "traveler_id"
   >[];
@@ -99,6 +100,7 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     TravelerRow,
     | "id"
     | "full_name"
+    | "birth_date"
     | "age"
     | "nationality"
     | "relationship"
@@ -106,6 +108,7 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     | "phone_number"
     | "whatsapp_e164"
     | "is_main_client"
+    | "requires_mexico_entry_review"
     | "mexico_entry_status"
   >[];
   process_reason: string | null;
@@ -304,7 +307,7 @@ export async function getInternalApplicationDetail(applicationId: string) {
     supabase
       .from("travelers")
       .select(
-        "id, full_name, age, nationality, relationship, country_code, phone_number, whatsapp_e164, is_main_client, mexico_entry_status"
+        "id, full_name, birth_date, age, nationality, relationship, country_code, phone_number, whatsapp_e164, is_main_client, requires_mexico_entry_review, mexico_entry_status"
       )
       .eq("application_id", application.id)
       .order("created_at", { ascending: true })
@@ -374,6 +377,7 @@ export async function getInternalApplicationDetail(applicationId: string) {
       file_name: document.file_name,
       file_size: document.file_size,
       id: document.id,
+      mexico_requirement_id: document.mexico_requirement_id,
       status: document.status,
       traveler_id: document.traveler_id
     })),
