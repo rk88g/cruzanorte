@@ -27,10 +27,14 @@ export type ClientActiveApplication = Pick<
   | "notes_public"
   | "updated_at"
 > & {
+  receiving_contact_exists: boolean;
   travelers_count: number;
 };
 
-type ActiveApplicationRow = Omit<ClientActiveApplication, "travelers_count">;
+type ActiveApplicationRow = Omit<
+  ClientActiveApplication,
+  "receiving_contact_exists" | "travelers_count"
+>;
 
 async function getTravelerCountForApplication(applicationId: string) {
   const supabase = createSupabaseAdminClient();
@@ -46,11 +50,29 @@ async function getTravelerCountForApplication(applicationId: string) {
   return count ?? 0;
 }
 
+async function hasReceivingContactForApplication(applicationId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { count, error } = await supabase
+    .from("receiving_contacts")
+    .select("id", { count: "exact", head: true })
+    .eq("application_id", applicationId);
+
+  if (error) {
+    throw new Error("Could not count receiving contacts.");
+  }
+
+  return (count ?? 0) > 0;
+}
+
 async function withTravelerCount(application: ActiveApplicationRow) {
-  const travelersCount = await getTravelerCountForApplication(application.id);
+  const [travelersCount, receivingContactExists] = await Promise.all([
+    getTravelerCountForApplication(application.id),
+    hasReceivingContactForApplication(application.id)
+  ]);
 
   return {
     ...application,
+    receiving_contact_exists: receivingContactExists,
     travelers_count: travelersCount
   };
 }
@@ -164,6 +186,7 @@ export async function startApplicationForClient(
     status: "created",
     application: {
       ...data,
+      receiving_contact_exists: false,
       travelers_count: 0
     }
   };

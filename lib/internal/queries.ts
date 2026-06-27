@@ -2,7 +2,10 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   ApplicationRow,
   ApplicationStatus,
+  ReceivingContactRow,
   TravelerRow,
+  UsCityRow,
+  UsStateRow,
   UserRow
 } from "@/types/database";
 
@@ -45,6 +48,23 @@ export type InternalClientListItem = InternalClient & {
 };
 
 export type InternalApplicationDetail = InternalApplicationListItem & {
+  receiving_contact: (Pick<
+    ReceivingContactRow,
+    | "address_reference"
+    | "city_other"
+    | "country_code"
+    | "full_name"
+    | "id"
+    | "notes"
+    | "phone_number"
+    | "relationship"
+    | "us_city_id"
+    | "us_state_id"
+    | "whatsapp_e164"
+  > & {
+    city_name: string | null;
+    state_name: string | null;
+  }) | null;
   travelers: Pick<
     TravelerRow,
     | "id"
@@ -227,9 +247,61 @@ export async function getInternalApplicationDetail(applicationId: string) {
     throw new Error("Could not read travelers.");
   }
 
+  const { data: receivingContact, error: receivingContactError } = await supabase
+    .from("receiving_contacts")
+    .select(
+      "id, full_name, relationship, country_code, phone_number, whatsapp_e164, us_state_id, us_city_id, city_other, address_reference, notes"
+    )
+    .eq("application_id", application.id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (receivingContactError) {
+    throw new Error("Could not read receiving contact.");
+  }
+
+  let state: Pick<UsStateRow, "name"> | null = null;
+  let city: Pick<UsCityRow, "name"> | null = null;
+
+  if (receivingContact?.us_state_id) {
+    const stateResult = await supabase
+      .from("us_states")
+      .select("name")
+      .eq("id", receivingContact.us_state_id)
+      .maybeSingle();
+
+    if (stateResult.error) {
+      throw new Error("Could not read receiving contact state.");
+    }
+
+    state = stateResult.data;
+  }
+
+  if (receivingContact?.us_city_id) {
+    const cityResult = await supabase
+      .from("us_cities")
+      .select("name")
+      .eq("id", receivingContact.us_city_id)
+      .maybeSingle();
+
+    if (cityResult.error) {
+      throw new Error("Could not read receiving contact city.");
+    }
+
+    city = cityResult.data;
+  }
+
   return {
     ...application,
     client: clientsById.get(application.client_id) ?? null,
+    receiving_contact: receivingContact
+      ? {
+          ...receivingContact,
+          city_name: city?.name ?? null,
+          state_name: state?.name ?? null
+        }
+      : null,
     travelers: travelersResult.data ?? [],
     process_reason: extractProcessReason(application.notes_public)
   };

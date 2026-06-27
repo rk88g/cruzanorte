@@ -183,6 +183,43 @@ export default async function InternalApplicationDetailPage({
           )}
         </section>
 
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl sm:p-6">
+          <h2 className="text-xl font-semibold text-foreground">Contacto que recibe</h2>
+          {application.receiving_contact ? (
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <DetailItem label="Nombre" value={application.receiving_contact.full_name} />
+              <DetailItem label="Relacion" value={application.receiving_contact.relationship} />
+              <DetailItem label="country_code" value={application.receiving_contact.country_code} />
+              <DetailItem label="phone_number" value={application.receiving_contact.phone_number} />
+              <DetailItem
+                label="whatsapp_e164"
+                value={application.receiving_contact.whatsapp_e164}
+              />
+              <DetailItem label="Estado" value={application.receiving_contact.state_name} />
+              <DetailItem
+                label="Ciudad"
+                value={
+                  application.receiving_contact.city_other ??
+                  application.receiving_contact.city_name
+                }
+              />
+              <DetailItem
+                label="Otra ciudad"
+                value={application.receiving_contact.city_other}
+              />
+              <DetailItem
+                label="Direccion aproximada"
+                value={application.receiving_contact.address_reference}
+              />
+              <DetailItem label="Notas" value={application.receiving_contact.notes} />
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Aun no se ha agregado contacto que recibe.
+            </p>
+          )}
+        </section>
+
         <ClientProcessTimeline
           currentStage={application.current_stage}
           progress={application.progress}

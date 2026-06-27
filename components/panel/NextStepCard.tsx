@@ -35,10 +35,20 @@ function getNextStepContent(
     };
   }
 
+  if (!activeApplication.receiving_contact_exists) {
+    return {
+      title: "Agrega el contacto que recibe",
+      description:
+        "Registra la informacion de la persona que recibira al grupo en Estados Unidos.",
+      actionLabel: "Agregar contacto",
+      actionHref: CLIENT_ROUTES.contactoRecibe
+    };
+  }
+
   return {
-    title: "Contacto que recibe",
+    title: "Fecha solicitada",
     description:
-      "El siguiente paso sera agregar la informacion de la persona que recibe.",
+      "El siguiente paso sera seleccionar una fecha disponible para tu proceso.",
     actionLabel: "Disponible proximamente"
   };
 }

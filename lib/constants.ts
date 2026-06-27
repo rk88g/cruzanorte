@@ -132,6 +132,20 @@ export const TRAVELER_RELATIONSHIP_OPTIONS = [
   "Otro"
 ] as const;
 
+export const RECEIVING_CONTACT_RELATIONSHIP_OPTIONS = [
+  "Familiar",
+  "Padre",
+  "Madre",
+  "Hermano/a",
+  "Hijo/a",
+  "Esposo/a",
+  "Amigo/a",
+  "Contacto de confianza",
+  "Otro"
+] as const;
+
+export const US_CITY_OTHER_VALUE = "__other__";
+
 export const APPLICATION_STATUSES = [
   "draft",
   "active",

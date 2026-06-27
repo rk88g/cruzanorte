@@ -31,11 +31,24 @@ type QuickActionsProps = {
 };
 
 export function QuickActions({ activeApplication }: QuickActionsProps) {
-  const firstActionHref = activeApplication ? CLIENT_ROUTES.personas : CLIENT_ROUTES.registro;
-  const firstActionTitle = activeApplication ? "Agregar personas" : "Iniciar registro";
-  const firstActionDescription = activeApplication
-    ? "Personas incluidas en el proceso guiado."
-    : "Informacion inicial del proceso guiado.";
+  const travelersAreComplete = activeApplication
+    ? activeApplication.travelers_count >= activeApplication.total_people
+    : false;
+  const firstActionHref = !activeApplication
+    ? CLIENT_ROUTES.registro
+    : travelersAreComplete
+      ? CLIENT_ROUTES.contactoRecibe
+      : CLIENT_ROUTES.personas;
+  const firstActionTitle = !activeApplication
+    ? "Iniciar registro"
+    : travelersAreComplete
+      ? "Contacto que recibe"
+      : "Agregar personas";
+  const firstActionDescription = !activeApplication
+    ? "Informacion inicial del proceso guiado."
+    : travelersAreComplete
+      ? "Informacion del destino aproximado."
+      : "Personas incluidas en el proceso guiado.";
 
   return (
     <section className="mt-6">

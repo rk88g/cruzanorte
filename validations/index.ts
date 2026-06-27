@@ -15,6 +15,12 @@ export {
   type TravelerInput
 } from "@/validations/traveler";
 
+export {
+  receivingContactSchema,
+  type ReceivingContactData,
+  type ReceivingContactInput
+} from "@/validations/receivingContact";
+
 export const whatsappNumberSchema = z
   .string()
   .min(1, "Ingresa un numero WhatsApp.")
