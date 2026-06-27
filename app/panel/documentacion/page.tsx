@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
 import { DocumentsPanel } from "@/components/panel/DocumentsPanel";
+import { PaymentCommitmentsPanel } from "@/components/panel/PaymentCommitmentsPanel";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { getClientSession } from "@/lib/auth/session";
 import { getClientDocumentationSetup } from "@/lib/documents";
+import { getClientPaymentsForApplication } from "@/lib/payments";
 import { CLIENT_ROUTES } from "@/lib/routes";
 
 export const metadata: Metadata = {
@@ -49,6 +51,7 @@ export default async function ClientDocumentationPage() {
 
   const {
     activeApplication,
+    documentationStageState,
     generalRequirements,
     mexicoSections,
     summary,
@@ -110,6 +113,8 @@ export default async function ClientDocumentationPage() {
     );
   }
 
+  const payments = await getClientPaymentsForApplication(session.userId, activeApplication.id);
+
   return (
     <section className="px-5 py-10 sm:px-6 lg:px-8 lg:py-14">
       <div className="mx-auto w-full max-w-6xl">
@@ -140,11 +145,16 @@ export default async function ClientDocumentationPage() {
 
         <DocumentsPanel
           applicationId={activeApplication.id}
+          documentationStageState={documentationStageState}
           generalRequirements={generalRequirements}
           mexicoSections={mexicoSections}
           summary={summary}
           travelerSections={travelerSections}
         />
+
+        <div className="mt-6">
+          <PaymentCommitmentsPanel payments={payments} />
+        </div>
 
         <div className="mt-6">
           <ButtonLink href={CLIENT_ROUTES.panel} variant="secondary">

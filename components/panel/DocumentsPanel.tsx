@@ -1,12 +1,14 @@
 import { DocumentRequirementCard } from "@/components/panel/DocumentRequirementCard";
 import type {
   ClientDocumentationSummary,
+  ClientDocumentationStageState,
   ClientDocumentRequirement,
   ClientTravelerDocumentSection
 } from "@/lib/documents";
 
 type DocumentsPanelProps = {
   applicationId: string;
+  documentationStageState: ClientDocumentationStageState;
   generalRequirements: ClientDocumentRequirement[];
   mexicoSections: ClientTravelerDocumentSection[];
   summary: ClientDocumentationSummary;
@@ -46,6 +48,7 @@ function RequirementGrid({
 
 export function DocumentsPanel({
   applicationId,
+  documentationStageState,
   generalRequirements,
   mexicoSections,
   summary,
@@ -70,7 +73,20 @@ export function DocumentsPanel({
         </div>
       </section>
 
-      <section>
+      {documentationStageState.is_after_documentation ? (
+        <section className="rounded-2xl border border-primary/30 bg-primary/10 p-5 shadow-soft backdrop-blur-xl sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+            Documentacion revisada para esta etapa
+          </p>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Tu documentacion ya fue revisada para continuar con el proceso. Si el equipo
+            necesita algun reemplazo o documento adicional, aparecera aqui.
+          </p>
+        </section>
+      ) : null}
+
+      {generalRequirements.length > 0 ? (
+        <section>
         <div className="mb-4">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
             Solicitud
@@ -80,7 +96,8 @@ export function DocumentsPanel({
           </h2>
         </div>
         <RequirementGrid applicationId={applicationId} requirements={generalRequirements} />
-      </section>
+        </section>
+      ) : null}
 
       {travelerSections.map((section) => (
         <section key={section.traveler.id}>

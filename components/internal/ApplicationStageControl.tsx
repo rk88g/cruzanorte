@@ -10,6 +10,7 @@ import type { ApplicationStage } from "@/types/database";
 type ApplicationStageControlProps = {
   applicationId: string;
   currentStage: ApplicationStage;
+  hasBlockingPendingPayments?: boolean;
 };
 
 type StageResponse = {
@@ -20,7 +21,8 @@ type StageResponse = {
 
 export function ApplicationStageControl({
   applicationId,
-  currentStage
+  currentStage,
+  hasBlockingPendingPayments = false
 }: ApplicationStageControlProps) {
   const router = useRouter();
   const [selectedStage, setSelectedStage] = useState<ApplicationStage>(currentStage);
@@ -38,7 +40,11 @@ export function ApplicationStageControl({
     setError(null);
     setMessage(null);
 
-    const confirmed = window.confirm("¿Seguro que deseas cambiar la etapa de esta solicitud?");
+    const confirmed = window.confirm(
+      hasBlockingPendingPayments
+        ? "Hay compromisos de pago pendientes. Deseas avanzar la etapa de todos modos?"
+        : "Seguro que deseas cambiar la etapa de esta solicitud?"
+    );
 
     if (!confirmed) {
       return;

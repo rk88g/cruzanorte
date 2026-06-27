@@ -8,6 +8,7 @@ import {
   TRAVELER_DOCUMENT_LABELS
 } from "@/lib/constants";
 import type { InternalApplicationDetail } from "@/lib/internal/queries";
+import type { PaymentCommitment } from "@/lib/payments";
 import type { DocumentStatus } from "@/types/database";
 
 export type UnifiedRowStatus =
@@ -18,15 +19,23 @@ export type UnifiedRowStatus =
   | "En revision"
   | "No aplica"
   | "Pendiente"
+  | "Pagado"
+  | "Parcial"
   | "Rechazado"
   | "Reemplazo solicitado"
-  | "Requiere accion";
+  | "Requiere accion"
+  | "Solicitado"
+  | "Vencido"
+  | "Cancelado"
+  | "Condicionado"
+  | "Acuerdo especial";
 
 export type UnifiedRowPriority = "Alta" | "Media" | "Baja";
 
 export type UnifiedRowActionType =
   | "approve_date"
   | "none"
+  | "view_payment"
   | "review_requirement"
   | "upcoming"
   | "view_document";
@@ -375,8 +384,70 @@ function buildDateRow(application: InternalApplicationDetail): ApplicationUnifie
   };
 }
 
+function formatMoney(amount: number, currency: string) {
+  return new Intl.NumberFormat("es-MX", {
+    currency,
+    style: "currency"
+  }).format(amount);
+}
+
+function getPaymentStatus(payment: PaymentCommitment): UnifiedRowStatus {
+  const statusMap: Record<PaymentCommitment["status"], UnifiedRowStatus> = {
+    cancelled: "Cancelado",
+    conditioned: "Condicionado",
+    in_review: "En revision",
+    overdue: "Vencido",
+    paid: "Pagado",
+    partial: "Parcial",
+    pending: "Pendiente",
+    rejected: "Rechazado",
+    requested: "Solicitado",
+    special_agreement: "Acuerdo especial"
+  };
+
+  return statusMap[payment.status];
+}
+
+function getPaymentPriority(payment: PaymentCommitment): UnifiedRowPriority {
+  if (payment.blocks_progress && payment.status !== "paid") {
+    return "Alta";
+  }
+
+  if (payment.status === "pending" || payment.status === "requested" || payment.status === "overdue") {
+    return "Media";
+  }
+
+  return "Baja";
+}
+
+function appendPaymentRows(rows: ApplicationUnifiedRow[], payments: PaymentCommitment[]) {
+  payments.forEach((payment, index) => {
+    rows.push({
+      actionLabel: payment.latest_receipt ? "Revisar" : "Ver pago",
+      actionType: "view_payment",
+      detail: [
+        payment.due_date ? `Vence: ${payment.due_date}` : "Sin fecha limite",
+        payment.blocks_progress ? "Bloquea avance" : "No bloquea avance",
+        payment.latest_receipt?.file_name ? `Comprobante: ${payment.latest_receipt.file_name}` : null
+      ]
+        .filter(Boolean)
+        .join(" / "),
+      id: `payment-${payment.id}`,
+      identifier: `PAY-${String(index + 1).padStart(2, "0")}`,
+      mainData: formatMoney(payment.amount, payment.currency),
+      nameOrReference: payment.traveler?.full_name ?? payment.concept,
+      priority: getPaymentPriority(payment),
+      relatedId: payment.id,
+      responsible: payment.status === "paid" ? "Sistema" : "Cliente",
+      status: getPaymentStatus(payment),
+      type: "Pago"
+    });
+  });
+}
+
 export function buildApplicationUnifiedRows(
-  application: InternalApplicationDetail
+  application: InternalApplicationDetail,
+  payments: PaymentCommitment[] = []
 ): ApplicationUnifiedRow[] {
   const travelerIdentifiers = buildTravelerIdentifierMap(application.travelers);
   const rows: ApplicationUnifiedRow[] = [];
@@ -537,6 +608,8 @@ export function buildApplicationUnifiedRows(
       }
     }
   }
+
+  appendPaymentRows(rows, payments);
 
   return rows;
 }

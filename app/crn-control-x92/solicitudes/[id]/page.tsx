@@ -5,11 +5,16 @@ import { ApplicationDetailHeader } from "@/components/internal/ApplicationDetail
 import { ApplicationStageControl } from "@/components/internal/ApplicationStageControl";
 import { ApplicationTimelineBar } from "@/components/internal/ApplicationTimelineBar";
 import { ApplicationUnifiedTable } from "@/components/internal/ApplicationUnifiedTable";
+import { ApplicationPaymentsPanel } from "@/components/internal/ApplicationPaymentsPanel";
 import { InternalShell } from "@/components/internal/InternalShell";
 import { buildApplicationUnifiedRows } from "@/lib/internal/applicationDetail";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
+import {
+  getPaymentsForApplication,
+  hasBlockingPendingPayments
+} from "@/lib/payments";
 
 type InternalApplicationDetailPageProps = {
   params: Promise<{
@@ -41,7 +46,9 @@ export default async function InternalApplicationDetailPage({
     notFound();
   }
 
-  const unifiedRows = buildApplicationUnifiedRows(application);
+  const payments = await getPaymentsForApplication(application.id);
+  const hasBlockingPayments = hasBlockingPendingPayments(payments);
+  const unifiedRows = buildApplicationUnifiedRows(application, payments);
 
   return (
     <InternalShell
@@ -64,6 +71,13 @@ export default async function InternalApplicationDetailPage({
         <ApplicationStageControl
           applicationId={application.id}
           currentStage={application.current_stage}
+          hasBlockingPendingPayments={hasBlockingPayments}
+        />
+        <ApplicationPaymentsPanel
+          applicationId={application.id}
+          hasBlockingPendingPayments={hasBlockingPayments}
+          payments={payments}
+          travelers={application.travelers}
         />
         <ApplicationUnifiedTable
           applicationId={application.id}

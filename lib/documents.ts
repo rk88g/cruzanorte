@@ -1,4 +1,5 @@
 import {
+  APPLICATION_STAGES,
   DOCUMENT_STATUS_DESCRIPTIONS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENTATION_PROGRESS,
@@ -29,6 +30,7 @@ import type {
   TravelerRow,
   UserRow
 } from "@/types/database";
+import type { ApplicationStage } from "@/types/database";
 
 const DOCUMENT_SELECT =
   "id, application_id, traveler_id, mexico_requirement_id, document_type, file_path, file_name, file_mime_type, file_size, status, admin_notes, client_notes, uploaded_by, reviewed_by, created_at, reviewed_at";
@@ -124,6 +126,11 @@ export type ClientDocumentationSummary = {
   rejected_count: number;
   required_total: number;
   uploaded_count: number;
+};
+
+export type ClientDocumentationStageState = {
+  is_documentation_open: boolean;
+  is_after_documentation: boolean;
 };
 
 export type InternalDocumentListItem = Pick<
@@ -398,73 +405,110 @@ async function getMexicoRequirementsForApplication(applicationId: string) {
   return data ?? [];
 }
 
+function isAfterDocumentationStage(stage: ApplicationStage) {
+  const documentationIndex = APPLICATION_STAGES.findIndex(
+    (item) => item.slug === DOCUMENTATION_STAGE
+  );
+  const currentIndex = APPLICATION_STAGES.findIndex((item) => item.slug === stage);
+
+  return currentIndex > documentationIndex;
+}
+
+function filterSuggestedRequirements({
+  includeSuggestedDocuments,
+  requirements
+}: {
+  includeSuggestedDocuments: boolean;
+  requirements: ClientDocumentRequirement[];
+}) {
+  if (includeSuggestedDocuments) {
+    return requirements;
+  }
+
+  return requirements.filter((requirement) => requirement.document);
+}
+
 function buildClientRequirements({
   documents,
+  includeSuggestedDocuments,
   mexicoRequirements,
   travelers
 }: {
   documents: DocumentRow[];
+  includeSuggestedDocuments: boolean;
   mexicoRequirements: TravelerMexicoEntryRequirementRow[];
   travelers: ClientTraveler[];
 }) {
-  const generalRequirements = REQUIRED_GENERAL_DOCUMENT_TYPES.map((documentType) =>
-    makeRequirement({
-      document: findLatestDocument(documents, {
-        documentType,
-        scope: "application"
-      }),
-      documentType,
-      key: `general-${documentType}`,
-      label: GENERAL_DOCUMENT_LABELS[documentType],
-      scope: "application"
-    })
-  );
-
-  const travelerSections = travelers.map((traveler) => ({
-    traveler,
-    requirements: REQUIRED_TRAVELER_DOCUMENT_TYPES.map((documentType) =>
+  const generalRequirements = filterSuggestedRequirements({
+    includeSuggestedDocuments,
+    requirements: REQUIRED_GENERAL_DOCUMENT_TYPES.map((documentType) =>
       makeRequirement({
         document: findLatestDocument(documents, {
           documentType,
-          scope: "traveler",
-          travelerId: traveler.id
+          scope: "application"
         }),
         documentType,
-        key: `traveler-${traveler.id}-${documentType}`,
-        label: TRAVELER_DOCUMENT_LABELS[documentType],
-        scope: "traveler",
-        travelerId: traveler.id
+        key: `general-${documentType}`,
+        label: GENERAL_DOCUMENT_LABELS[documentType],
+        scope: "application"
       })
     )
-  }));
+  });
+
+  const travelerSections = travelers
+    .map((traveler) => ({
+      traveler,
+      requirements: filterSuggestedRequirements({
+        includeSuggestedDocuments,
+        requirements: REQUIRED_TRAVELER_DOCUMENT_TYPES.map((documentType) =>
+          makeRequirement({
+            document: findLatestDocument(documents, {
+              documentType,
+              scope: "traveler",
+              travelerId: traveler.id
+            }),
+            documentType,
+            key: `traveler-${traveler.id}-${documentType}`,
+            label: TRAVELER_DOCUMENT_LABELS[documentType],
+            scope: "traveler",
+            travelerId: traveler.id
+          })
+        )
+      })
+    }))
+    .filter((section) => includeSuggestedDocuments || section.requirements.length > 0);
 
   const mexicoSections = travelers
     .filter((traveler) => traveler.requires_mexico_entry_review)
     .map((traveler) => ({
       traveler,
-      requirements: MEXICO_REVIEW_DOCUMENT_TYPES.map((documentType) => {
-        const mexicoRequirement = mexicoRequirements.find(
-          (requirement) =>
-            requirement.traveler_id === traveler.id &&
-            requirement.requirement_type === getMexicoRequirementTypeForDocument(documentType)
-        );
+      requirements: filterSuggestedRequirements({
+        includeSuggestedDocuments,
+        requirements: MEXICO_REVIEW_DOCUMENT_TYPES.map((documentType) => {
+          const mexicoRequirement = mexicoRequirements.find(
+            (requirement) =>
+              requirement.traveler_id === traveler.id &&
+              requirement.requirement_type === getMexicoRequirementTypeForDocument(documentType)
+          );
 
-        return makeRequirement({
-          document: findLatestDocument(documents, {
+          return makeRequirement({
+            document: findLatestDocument(documents, {
+              documentType,
+              mexicoRequirementId: mexicoRequirement?.id,
+              scope: "mexico_requirement",
+              travelerId: traveler.id
+            }),
             documentType,
-            mexicoRequirementId: mexicoRequirement?.id,
+            key: `mexico-${traveler.id}-${documentType}`,
+            label: MEXICO_REVIEW_DOCUMENT_LABELS[documentType],
+            mexicoRequirementId: mexicoRequirement?.id ?? null,
             scope: "mexico_requirement",
             travelerId: traveler.id
-          }),
-          documentType,
-          key: `mexico-${traveler.id}-${documentType}`,
-          label: MEXICO_REVIEW_DOCUMENT_LABELS[documentType],
-          mexicoRequirementId: mexicoRequirement?.id ?? null,
-          scope: "mexico_requirement",
-          travelerId: traveler.id
-        });
+          });
+        })
       })
-    }));
+    }))
+    .filter((section) => includeSuggestedDocuments || section.requirements.length > 0);
 
   const allRequirements = [
     ...generalRequirements,
@@ -487,6 +531,10 @@ export async function getClientDocumentationSetup(clientId: string) {
   if (!activeApplication) {
     return {
       activeApplication: null,
+      documentationStageState: {
+        is_after_documentation: false,
+        is_documentation_open: false
+      },
       generalRequirements: [],
       mexicoSections: [],
       summary: null,
@@ -499,14 +547,20 @@ export async function getClientDocumentationSetup(clientId: string) {
     getDocumentsForApplication(activeApplication.id),
     getMexicoRequirementsForApplication(activeApplication.id)
   ]);
+  const documentationStageState = {
+    is_after_documentation: isAfterDocumentationStage(activeApplication.current_stage),
+    is_documentation_open: !isAfterDocumentationStage(activeApplication.current_stage)
+  };
   const requirements = buildClientRequirements({
     documents,
+    includeSuggestedDocuments: documentationStageState.is_documentation_open,
     mexicoRequirements,
     travelers
   });
 
   return {
     activeApplication,
+    documentationStageState,
     generalRequirements: requirements.generalRequirements,
     mexicoSections: requirements.mexicoSections,
     summary: requirements.summary,
@@ -779,6 +833,19 @@ export async function uploadDocumentForClient(
       status: "not_allowed",
       message:
         "Este documento ya fue recibido. Solo podras subir reemplazo si el equipo lo solicita."
+    };
+  }
+
+  if (
+    isAfterDocumentationStage(activeApplication.current_stage) &&
+    (!existingDocument ||
+      (existingDocument.status !== "rejected" &&
+        existingDocument.status !== "replacement_requested"))
+  ) {
+    return {
+      status: "not_allowed",
+      message:
+        "La etapa documental ya fue revisada. Solo puedes subir reemplazos solicitados por el equipo."
     };
   }
 
@@ -1113,6 +1180,7 @@ export async function getApplicationDocumentSummary(applicationId: string) {
   ]);
   const requirements = buildClientRequirements({
     documents,
+    includeSuggestedDocuments: true,
     mexicoRequirements,
     travelers
   });

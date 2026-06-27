@@ -353,6 +353,20 @@ export const PAYMENT_SCOPES = [
   "special_agreement"
 ] as const;
 
+export const PAYMENT_SCOPE_LABELS = {
+  application: "Solicitud",
+  group: "Grupo",
+  traveler: "Persona",
+  stage: "Etapa",
+  mexico_entry_requirement: "Requisito Mexico",
+  documentation: "Documentacion",
+  office_arrival: "Llegada a oficina",
+  before_mexico_arrival: "Antes de llegar a Mexico",
+  after_mexico_arrival: "Despues de llegar a Mexico",
+  extra: "Extra",
+  special_agreement: "Acuerdo especial"
+} as const;
+
 export const PAYMENT_TYPES = [
   "fixed",
   "percentage",
@@ -377,6 +391,19 @@ export const PAYMENT_STATUSES = [
   "conditioned",
   "special_agreement"
 ] as const;
+
+export const PAYMENT_STATUS_LABELS = {
+  pending: "Pendiente",
+  requested: "Solicitado",
+  in_review: "En revision",
+  partial: "Parcial",
+  paid: "Pagado",
+  overdue: "Vencido",
+  rejected: "Rechazado",
+  cancelled: "Cancelado",
+  conditioned: "Condicionado",
+  special_agreement: "Acuerdo especial"
+} as const;
 
 export const TIMELINE_STATUSES = [
   "pending",

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PanelDashboard } from "@/components/panel/PanelDashboard";
 import { getClientSession } from "@/lib/auth/session";
 import { getActiveApplicationForClient } from "@/lib/applications";
+import { getClientPaymentsForApplication } from "@/lib/payments";
 
 export const metadata: Metadata = {
   title: "Panel cliente",
@@ -18,6 +19,15 @@ export default async function ClientPanelPage() {
   }
 
   const activeApplication = await getActiveApplicationForClient(session.userId);
+  const payments = activeApplication
+    ? await getClientPaymentsForApplication(session.userId, activeApplication.id)
+    : [];
 
-  return <PanelDashboard activeApplication={activeApplication} session={session} />;
+  return (
+    <PanelDashboard
+      activeApplication={activeApplication}
+      payments={payments}
+      session={session}
+    />
+  );
 }

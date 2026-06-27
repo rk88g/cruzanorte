@@ -27,9 +27,16 @@ const statusClassNames: Record<UnifiedRowStatus, string> = {
   "En revision": "border-primary/30 bg-primary/10 text-primary",
   "No aplica": "border-border bg-background text-muted-foreground",
   Pendiente: "border-border bg-background text-muted-foreground",
+  Pagado: "border-success/30 bg-success/10 text-success",
+  Parcial: "border-primary/30 bg-primary/10 text-primary",
   Rechazado: "border-danger/30 bg-danger/10 text-danger",
   "Reemplazo solicitado": "border-danger/30 bg-danger/10 text-danger",
-  "Requiere accion": "border-danger/30 bg-danger/10 text-danger"
+  "Requiere accion": "border-danger/30 bg-danger/10 text-danger",
+  Solicitado: "border-primary/30 bg-primary/10 text-primary",
+  Vencido: "border-danger/30 bg-danger/10 text-danger",
+  Cancelado: "border-border bg-background text-muted-foreground",
+  Condicionado: "border-primary/30 bg-primary/10 text-primary",
+  "Acuerdo especial": "border-primary/30 bg-primary/10 text-primary"
 };
 
 const priorityClassNames: Record<UnifiedRowPriority, string> = {
@@ -101,7 +108,11 @@ function RowAction({
     );
   }
 
-  if (row.actionType === "review_requirement" || row.actionType === "upcoming") {
+  if (
+    row.actionType === "review_requirement" ||
+    row.actionType === "upcoming" ||
+    row.actionType === "view_payment"
+  ) {
     return <span className="text-sm font-semibold text-muted-foreground">{row.actionLabel}</span>;
   }
 

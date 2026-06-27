@@ -1,9 +1,11 @@
 import { AccountSummaryCard } from "@/components/panel/AccountSummaryCard";
 import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
 import { NextStepCard } from "@/components/panel/NextStepCard";
+import { PaymentCommitmentsPanel } from "@/components/panel/PaymentCommitmentsPanel";
 import { QuickActions } from "@/components/panel/QuickActions";
 import type { ClientActiveApplication } from "@/lib/applications";
 import type { ClientSession } from "@/lib/auth/session";
+import type { PaymentCommitment } from "@/lib/payments";
 import {
   APPLICATION_STAGES,
   DEFAULT_APPLICATION_PROGRESS,
@@ -12,10 +14,15 @@ import {
 
 type PanelDashboardProps = {
   activeApplication: ClientActiveApplication | null;
+  payments: PaymentCommitment[];
   session: ClientSession;
 };
 
-export function PanelDashboard({ activeApplication, session }: PanelDashboardProps) {
+export function PanelDashboard({
+  activeApplication,
+  payments,
+  session
+}: PanelDashboardProps) {
   const currentStage = activeApplication?.current_stage ?? DEFAULT_APPLICATION_STAGE;
   const currentProgress = activeApplication?.progress ?? DEFAULT_APPLICATION_PROGRESS;
   const currentStageLabel =
@@ -51,6 +58,10 @@ export function PanelDashboard({ activeApplication, session }: PanelDashboardPro
         </div>
 
         <QuickActions activeApplication={activeApplication} />
+
+        <div className="mt-6">
+          <PaymentCommitmentsPanel payments={payments} />
+        </div>
       </div>
     </section>
   );
