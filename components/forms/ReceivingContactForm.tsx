@@ -17,7 +17,7 @@ import type {
   UsStateOption
 } from "@/lib/receivingContact";
 import { cn } from "@/lib/utils";
-import { receivingContactSchema } from "@/validations/receivingContact";
+import { receivingContactFormSchema } from "@/validations/receivingContact";
 
 export type ReceivingContactFormValues = {
   full_name: string;
@@ -93,7 +93,7 @@ export function ReceivingContactForm({
     reset,
     setValue
   } = useForm<ReceivingContactFormValues>({
-    resolver: zodResolver(receivingContactSchema),
+    resolver: zodResolver(receivingContactFormSchema),
     defaultValues
   });
   const countryCode = useWatch({ control, name: "country_code" });
