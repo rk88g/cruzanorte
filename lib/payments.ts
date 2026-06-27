@@ -10,10 +10,12 @@ import type {
 import type { PaymentReceiptRow, PaymentRow, TravelerRow } from "@/types/database";
 
 const PAYMENT_SELECT =
-  "id, application_id, client_id, traveler_id, mexico_requirement_id, stage, concept, description, amount, currency, payment_type, payment_scope, payment_method, payment_provider, provider_reference, percentage, due_date, status, blocks_progress, is_extra_payment, is_financed, financing_months, promotion_name, discount_amount, discount_percentage, created_by, created_at, updated_at";
+  "id, application_id, client_id, traveler_id, mexico_requirement_id, stage, concept, description, amount, currency, payment_type, payment_scope, percentage, due_date, status, blocks_progress, is_extra_payment, is_financed, financing_months, promotion_name, discount_amount, discount_percentage, created_by, created_at, updated_at";
 
 const PAYMENT_RECEIPT_SELECT =
   "id, payment_id, application_id, traveler_id, file_path, file_name, amount_reported, currency, status, admin_notes, client_notes, uploaded_by, reviewed_by, created_at, reviewed_at";
+
+type PaymentRecord = Omit<PaymentRow, "payment_method" | "payment_provider" | "provider_reference">;
 
 export type PaymentReceiptSummary = Pick<
   PaymentReceiptRow,
@@ -46,10 +48,7 @@ export type PaymentCommitment = Pick<
   | "is_extra_payment"
   | "is_financed"
   | "payment_scope"
-  | "payment_method"
-  | "payment_provider"
   | "promotion_name"
-  | "provider_reference"
   | "stage"
   | "status"
   | "traveler_id"
@@ -90,7 +89,7 @@ function toPaymentCommitment({
   receipt,
   traveler
 }: {
-  payment: PaymentRow;
+  payment: PaymentRecord;
   receipt: PaymentReceiptRow | null;
   traveler: Pick<TravelerRow, "full_name" | "id"> | null;
 }): PaymentCommitment {
@@ -126,10 +125,7 @@ function toPaymentCommitment({
         }
       : null,
     payment_scope: payment.payment_scope,
-    payment_method: payment.payment_method,
-    payment_provider: payment.payment_provider,
     promotion_name: payment.promotion_name,
-    provider_reference: payment.provider_reference,
     scope_label: PAYMENT_SCOPE_LABELS[payment.payment_scope],
     stage: payment.stage,
     status: payment.status,
@@ -186,7 +182,7 @@ async function getLatestReceiptsByPaymentId(paymentIds: string[]) {
   return receiptsByPaymentId;
 }
 
-async function hydratePayments(payments: PaymentRow[]) {
+async function hydratePayments(payments: PaymentRecord[]) {
   const [travelersById, receiptsByPaymentId] = await Promise.all([
     getTravelersById(payments.map((payment) => payment.traveler_id ?? "")),
     getLatestReceiptsByPaymentId(payments.map((payment) => payment.id))
@@ -295,10 +291,7 @@ export async function createInternalPayment(
       is_extra_payment: input.is_extra_payment,
       is_financed: input.is_financed,
       payment_scope: input.payment_scope,
-      payment_method: "manual",
-      payment_provider: "none",
       payment_type: "fixed",
-      provider_reference: null,
       promotion_name: input.promotion_name ?? null,
       stage: input.stage,
       status: input.status,
