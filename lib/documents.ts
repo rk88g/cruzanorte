@@ -761,6 +761,27 @@ export async function uploadDocumentForClient(
           travelerId: input.traveler_id
         })
       : null;
+  const existingDocument = await findExistingDocumentRecord({
+    applicationId: activeApplication.id,
+    documentType: input.document_type,
+    mexicoRequirementId: mexicoRequirement?.id,
+    scope: input.scope,
+    travelerId: input.traveler_id
+  });
+
+  if (
+    existingDocument &&
+    (existingDocument.status === "uploaded" ||
+      existingDocument.status === "in_review" ||
+      existingDocument.status === "accepted")
+  ) {
+    return {
+      status: "not_allowed",
+      message:
+        "Este documento ya fue recibido. Solo podras subir reemplazo si el equipo lo solicita."
+    };
+  }
+
   const filePath = buildDocumentFilePath({
     applicationId: activeApplication.id,
     documentType: input.document_type,
@@ -777,13 +798,6 @@ export async function uploadDocumentForClient(
     filePath
   });
 
-  const existingDocument = await findExistingDocumentRecord({
-    applicationId: activeApplication.id,
-    documentType: input.document_type,
-    mexicoRequirementId: mexicoRequirement?.id,
-    scope: input.scope,
-    travelerId: input.traveler_id
-  });
   const payload = {
     application_id: activeApplication.id,
     traveler_id: input.scope === "application" ? null : input.traveler_id ?? null,

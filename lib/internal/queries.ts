@@ -72,10 +72,12 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     | "client_notes"
     | "created_at"
     | "document_type"
+    | "file_mime_type"
     | "file_name"
     | "file_size"
     | "id"
     | "mexico_requirement_id"
+    | "reviewed_at"
     | "status"
     | "traveler_id"
   >[];
@@ -374,10 +376,12 @@ export async function getInternalApplicationDetail(applicationId: string) {
       client_notes: document.client_notes,
       created_at: document.created_at,
       document_type: document.document_type,
+      file_mime_type: document.file_mime_type,
       file_name: document.file_name,
       file_size: document.file_size,
       id: document.id,
       mexico_requirement_id: document.mexico_requirement_id,
+      reviewed_at: document.reviewed_at,
       status: document.status,
       traveler_id: document.traveler_id
     })),

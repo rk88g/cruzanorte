@@ -2,14 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ApplicationDetailHeader } from "@/components/internal/ApplicationDetailHeader";
-import { ApplicationDetailSections } from "@/components/internal/ApplicationDetailSections";
-import { ApplicationGeneralBreakdown } from "@/components/internal/ApplicationGeneralBreakdown";
-import { ApplicationPendingItemsTable } from "@/components/internal/ApplicationPendingItemsTable";
+import { ApplicationStageControl } from "@/components/internal/ApplicationStageControl";
+import { ApplicationTimelineBar } from "@/components/internal/ApplicationTimelineBar";
+import { ApplicationUnifiedTable } from "@/components/internal/ApplicationUnifiedTable";
 import { InternalShell } from "@/components/internal/InternalShell";
-import {
-  buildApplicationGeneralBreakdown,
-  buildApplicationPendingItems
-} from "@/lib/internal/applicationDetail";
+import { buildApplicationUnifiedRows } from "@/lib/internal/applicationDetail";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
@@ -44,13 +41,12 @@ export default async function InternalApplicationDetailPage({
     notFound();
   }
 
-  const breakdownItems = buildApplicationGeneralBreakdown(application);
-  const pendingItems = buildApplicationPendingItems(application);
+  const unifiedRows = buildApplicationUnifiedRows(application);
 
   return (
     <InternalShell
       title="Detalle de solicitud"
-      description="Vista resumida de avance, pendientes y datos completos organizados."
+      description="Centro operativo interno para revisar avance, documentacion y acciones de la solicitud."
     >
       <div className="space-y-6">
         <Link
@@ -61,9 +57,19 @@ export default async function InternalApplicationDetailPage({
         </Link>
 
         <ApplicationDetailHeader application={application} />
-        <ApplicationGeneralBreakdown items={breakdownItems} />
-        <ApplicationPendingItemsTable items={pendingItems} />
-        <ApplicationDetailSections application={application} />
+        <ApplicationTimelineBar
+          currentStage={application.current_stage}
+          progress={application.progress}
+        />
+        <ApplicationStageControl
+          applicationId={application.id}
+          currentStage={application.current_stage}
+        />
+        <ApplicationUnifiedTable
+          applicationId={application.id}
+          requestedDateStatus={application.requested_date_status}
+          rows={unifiedRows}
+        />
       </div>
     </InternalShell>
   );

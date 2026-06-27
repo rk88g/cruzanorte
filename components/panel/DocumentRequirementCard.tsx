@@ -32,6 +32,16 @@ export function DocumentRequirementCard({
   applicationId,
   requirement
 }: DocumentRequirementCardProps) {
+  const canUpload =
+    requirement.status === "pending" ||
+    requirement.status === "rejected" ||
+    requirement.status === "replacement_requested";
+  const hasLockedDocument =
+    requirement.document &&
+    (requirement.status === "uploaded" ||
+      requirement.status === "in_review" ||
+      requirement.status === "accepted");
+
   return (
     <article className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -91,7 +101,25 @@ export function DocumentRequirementCard({
         </div>
       ) : null}
 
-      <DocumentUploadForm applicationId={applicationId} requirement={requirement} />
+      {hasLockedDocument ? (
+        <div className="mt-4 rounded-xl border border-success/30 bg-success/10 p-4">
+          <p className="text-sm font-semibold text-success">
+            {requirement.status === "accepted"
+              ? "Documento aceptado"
+              : requirement.status === "in_review"
+                ? "Documento en revision"
+                : "Documento cargado"}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            El formulario de carga se mantiene cerrado mientras el equipo revisa este
+            archivo.
+          </p>
+        </div>
+      ) : null}
+
+      {canUpload ? (
+        <DocumentUploadForm applicationId={applicationId} requirement={requirement} />
+      ) : null}
     </article>
   );
 }
