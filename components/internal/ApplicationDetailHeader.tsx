@@ -51,6 +51,10 @@ function HeaderMetric({ label, value }: { label: string; value: number | string 
   );
 }
 
+function getShortApplicationId(id: string) {
+  return id.slice(0, 8).toUpperCase();
+}
+
 export function ApplicationDetailHeader({ application }: ApplicationDetailHeaderProps) {
   const clientName =
     application.main_contact_name ||
@@ -81,6 +85,7 @@ export function ApplicationDetailHeader({ application }: ApplicationDetailHeader
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <HeaderMetric label="ID corto" value={getShortApplicationId(application.id)} />
         <HeaderMetric label="Estado" value={statusLabels[application.status]} />
         <HeaderMetric label="Etapa" value={getStageLabel(application.current_stage)} />
         <HeaderMetric label="Creacion" value={formatDate(application.created_at)} />

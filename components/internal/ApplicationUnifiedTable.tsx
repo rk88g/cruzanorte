@@ -55,12 +55,13 @@ function matchesQuery(row: ApplicationUnifiedRow, query: string) {
 
   return [
     row.actionLabel,
-    row.area,
     row.detail,
+    row.identifier,
     row.mainData,
-    row.personOrRelation,
+    row.nameOrReference,
     row.responsible,
-    row.status
+    row.status,
+    row.type
   ]
     .join(" ")
     .toLowerCase()
@@ -124,10 +125,10 @@ export function ApplicationUnifiedTable({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            Tabla general de solicitud
+            Resumen operativo
           </p>
           <h2 className="mt-2 text-xl font-semibold text-foreground">
-            Vista operativa unificada
+            Resumen operativo de la solicitud
           </h2>
         </div>
 
@@ -141,7 +142,7 @@ export function ApplicationUnifiedTable({
             autoComplete="off"
             className="min-h-11 w-full rounded-lg border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground shadow-soft outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar area, persona o estado"
+            placeholder="Buscar identificador, nombre o estado"
             type="search"
             value={query}
           />
@@ -152,21 +153,23 @@ export function ApplicationUnifiedTable({
         <table className="w-full table-fixed text-left text-sm">
           <thead className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <tr>
-              <th className="w-[11%] px-3 py-3 font-semibold">Area</th>
-              <th className="w-[17%] px-3 py-3 font-semibold">Persona / relacion</th>
-              <th className="w-[18%] px-3 py-3 font-semibold">Dato principal</th>
-              <th className="w-[20%] px-3 py-3 font-semibold">Detalle</th>
+              <th className="w-[10%] px-3 py-3 font-semibold">Identificador</th>
+              <th className="w-[12%] px-3 py-3 font-semibold">Tipo</th>
+              <th className="w-[16%] px-3 py-3 font-semibold">Nombre / Referencia</th>
+              <th className="w-[17%] px-3 py-3 font-semibold">Dato principal</th>
+              <th className="w-[18%] px-3 py-3 font-semibold">Detalle</th>
               <th className="w-[12%] px-3 py-3 font-semibold">Estado</th>
-              <th className="w-[10%] px-3 py-3 font-semibold">Responsable</th>
-              <th className="w-[12%] px-3 py-3 font-semibold">Accion</th>
+              <th className="w-[8%] px-3 py-3 font-semibold">Responsable</th>
+              <th className="w-[7%] px-3 py-3 font-semibold">Accion</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {visibleRows.map((row) => (
               <tr className="align-top" key={row.id}>
-                <td className="px-3 py-4 font-semibold text-foreground">{row.area}</td>
+                <td className="px-3 py-4 font-semibold text-primary">{row.identifier}</td>
+                <td className="px-3 py-4 font-semibold text-foreground">{row.type}</td>
                 <td className="break-words px-3 py-4 text-muted-foreground">
-                  {row.personOrRelation}
+                  {row.nameOrReference}
                 </td>
                 <td className="break-words px-3 py-4 text-foreground">{row.mainData}</td>
                 <td className="break-words px-3 py-4 text-muted-foreground">{row.detail}</td>
@@ -198,11 +201,14 @@ export function ApplicationUnifiedTable({
         {visibleRows.map((row) => (
           <article className="rounded-xl border border-border bg-background/60 p-4" key={row.id}>
             <div className="flex flex-wrap gap-2">
+              <span className="w-fit rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                {row.identifier}
+              </span>
               <Badge className={statusClassNames[row.status]} value={row.status} />
               <Badge className={priorityClassNames[row.priority]} value={row.priority} />
             </div>
             <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              {row.area}
+              {row.type}
             </p>
             <h3 className="mt-2 break-words text-base font-semibold text-foreground">
               {row.mainData}
@@ -210,9 +216,9 @@ export function ApplicationUnifiedTable({
             <dl className="mt-3 grid gap-3 text-sm">
               <div>
                 <dt className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                  Persona / relacion
+                  Nombre / Referencia
                 </dt>
-                <dd className="mt-1 break-words text-foreground">{row.personOrRelation}</dd>
+                <dd className="mt-1 break-words text-foreground">{row.nameOrReference}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.14em] text-muted-foreground">

@@ -5,7 +5,6 @@ import {
   MEXICO_REVIEW_DOCUMENT_TYPES,
   REQUIRED_GENERAL_DOCUMENT_TYPES,
   REQUIRED_TRAVELER_DOCUMENT_TYPES,
-  REQUESTED_DATE_STATUS_LABELS,
   TRAVELER_DOCUMENT_LABELS
 } from "@/lib/constants";
 import type { InternalApplicationDetail } from "@/lib/internal/queries";
@@ -48,18 +47,21 @@ export type ApplicationUnifiedDocument = {
 export type ApplicationUnifiedRow = {
   actionLabel: string;
   actionType: UnifiedRowActionType;
-  area: string;
   detail: string;
   document?: ApplicationUnifiedDocument;
   documentId?: string;
   id: string;
+  identifier: string;
   mainData: string;
-  personOrRelation: string;
+  nameOrReference: string;
   priority: UnifiedRowPriority;
   relatedId?: string;
   responsible: "Cliente" | "Interno" | "Sistema";
   status: UnifiedRowStatus;
+  type: string;
 };
+
+type TravelerDetail = InternalApplicationDetail["travelers"][number];
 
 function hasValue(value: number | string | null | undefined) {
   if (typeof value === "number") {
@@ -79,6 +81,16 @@ function joinDetails(values: Array<number | string | null | undefined>) {
   });
 
   return filtered.length > 0 ? filtered.join(" / ") : "Sin dato";
+}
+
+function getTravelerBaseIdentifier(index: number) {
+  return `V-${String(index + 1).padStart(2, "0")}`;
+}
+
+function getTravelerDisplayIdentifier(index: number, traveler: TravelerDetail) {
+  const baseIdentifier = getTravelerBaseIdentifier(index);
+
+  return traveler.is_main_client ? `${baseIdentifier} - Principal` : baseIdentifier;
 }
 
 function getDocumentStatus(status: DocumentStatus): UnifiedRowStatus {
@@ -111,31 +123,23 @@ function getDocumentResponsible(status: DocumentStatus) {
     return "Interno" as const;
   }
 
-  return "Cliente" as const;
-}
-
-function getDateStatus(application: InternalApplicationDetail): UnifiedRowStatus {
-  if (application.requested_date_status === "approved" || application.approved_date_id) {
-    return "Autorizado";
-  }
-
-  if (application.requested_date_status === "requested") {
-    return "En revision";
-  }
-
-  if (application.requested_date_status === "rejected") {
-    return "Rechazado";
-  }
-
-  return "Pendiente";
-}
-
-function getDateResponsible(application: InternalApplicationDetail) {
-  if (application.requested_date_status === "requested") {
-    return "Interno" as const;
+  if (status === "accepted") {
+    return "Sistema" as const;
   }
 
   return "Cliente" as const;
+}
+
+function getDocumentActionLabel(status: DocumentStatus, hasFile: boolean) {
+  if (!hasFile) {
+    return "Solicitar";
+  }
+
+  if (status === "rejected" || status === "replacement_requested") {
+    return "Ver comentario";
+  }
+
+  return "Ver archivo";
 }
 
 function findDocument(
@@ -170,39 +174,41 @@ function findDocument(
 }
 
 function makeDocumentRow({
-  area,
   document,
   documentLabel,
   id,
-  relatedTo
+  identifier,
+  nameOrReference,
+  type
 }: {
-  area: "Documento" | "Requisito Mexico";
   document: InternalApplicationDetail["documents"][number] | null;
   documentLabel: string;
   id: string;
-  relatedTo: string;
+  identifier: string;
+  nameOrReference: string;
+  type: "Documento" | "Documento general" | "Requisito Mexico";
 }): ApplicationUnifiedRow {
   if (!document) {
     return {
       actionLabel: "Solicitar",
       actionType: "upcoming",
-      area,
       detail: "Pendiente de carga",
       id,
+      identifier,
       mainData: documentLabel,
-      personOrRelation: relatedTo,
+      nameOrReference,
       priority: "Media",
       responsible: "Cliente",
-      status: "Pendiente"
+      status: "Pendiente",
+      type
     };
   }
 
-  const status = getDocumentStatus(document.status);
+  const hasFile = Boolean(document.file_name);
 
   return {
-    actionLabel: document.file_name ? "Ver archivo" : "Revisar",
-    actionType: document.file_name ? "view_document" : "upcoming",
-    area,
+    actionLabel: getDocumentActionLabel(document.status, hasFile),
+    actionType: hasFile ? "view_document" : "upcoming",
     detail: document.file_name ?? DOCUMENT_STATUS_LABELS[document.status],
     document: {
       adminNotes: document.admin_notes,
@@ -213,23 +219,23 @@ function makeDocumentRow({
       fileName: document.file_name,
       fileSize: document.file_size,
       id: document.id,
-      relatedTo,
+      relatedTo: nameOrReference,
       status: document.status
     },
     documentId: document.id,
     id,
+    identifier,
     mainData: documentLabel,
-    personOrRelation: relatedTo,
+    nameOrReference,
     priority: getDocumentPriority(document.status),
     relatedId: document.id,
     responsible: getDocumentResponsible(document.status),
-    status
+    status: getDocumentStatus(document.status),
+    type
   };
 }
 
-function getTravelerStatus(
-  traveler: InternalApplicationDetail["travelers"][number]
-): UnifiedRowStatus {
+function getTravelerStatus(traveler: TravelerDetail): UnifiedRowStatus {
   const requiredValues = [traveler.full_name, traveler.nationality, traveler.relationship];
 
   return requiredValues.every(hasValue) ? "Completo" : "Requiere accion";
@@ -270,109 +276,169 @@ function getMexicoRequirementStatus(
   return "Pendiente";
 }
 
+function buildTravelerIdentifierMap(travelers: TravelerDetail[]) {
+  return new Map(
+    travelers.map((traveler, index) => [
+      traveler.id,
+      {
+        base: getTravelerBaseIdentifier(index),
+        display: getTravelerDisplayIdentifier(index, traveler)
+      }
+    ])
+  );
+}
+
+function shouldShowDateRow(application: InternalApplicationDetail) {
+  return (
+    application.requested_date_status === "none" ||
+    application.requested_date_status === "requested" ||
+    application.requested_date_status === "rejected" ||
+    Boolean(
+      application.requested_date &&
+        application.requested_date.capacity_available < application.total_people
+    )
+  );
+}
+
+function buildDateRow(application: InternalApplicationDetail): ApplicationUnifiedRow {
+  const hasInsufficientCapacity = Boolean(
+    application.requested_date &&
+      application.requested_date.capacity_available < application.total_people
+  );
+
+  if (hasInsufficientCapacity) {
+    return {
+      actionLabel: "Revisar",
+      actionType: "approve_date",
+      detail: `${application.requested_date?.capacity_available ?? 0} cupo(s) disponibles / ${application.total_people} requeridos`,
+      id: "date-capacity",
+      identifier: "SOL",
+      mainData: "Cupo insuficiente",
+      nameOrReference: "Grupo completo",
+      priority: "Alta",
+      relatedId: application.requested_date_id ?? undefined,
+      responsible: "Interno",
+      status: "Requiere accion",
+      type: "Pendiente"
+    };
+  }
+
+  if (application.requested_date_status === "requested") {
+    return {
+      actionLabel: "Revisar",
+      actionType: "approve_date",
+      detail: joinDetails([
+        application.requested_date?.date,
+        application.requested_date?.location_city
+      ]),
+      id: "date-requested",
+      identifier: "SOL",
+      mainData: "Fecha pendiente de autorizacion",
+      nameOrReference: "Grupo completo",
+      priority: "Alta",
+      relatedId: application.requested_date_id ?? undefined,
+      responsible: "Interno",
+      status: "En revision",
+      type: "Pendiente"
+    };
+  }
+
+  if (application.requested_date_status === "rejected") {
+    return {
+      actionLabel: "Solicitar",
+      actionType: "upcoming",
+      detail: "Cliente debe seleccionar una nueva fecha",
+      id: "date-rejected",
+      identifier: "SOL",
+      mainData: "Fecha rechazada",
+      nameOrReference: "Grupo completo",
+      priority: "Alta",
+      relatedId: application.requested_date_id ?? undefined,
+      responsible: "Cliente",
+      status: "Rechazado",
+      type: "Pendiente"
+    };
+  }
+
+  return {
+    actionLabel: "Solicitar",
+    actionType: "upcoming",
+    detail: "Se requiere solicitar una fecha disponible",
+    id: "date-missing",
+    identifier: "SOL",
+    mainData: "Falta solicitar fecha",
+    nameOrReference: "Grupo completo",
+    priority: "Media",
+    responsible: "Cliente",
+    status: "Pendiente",
+    type: "Pendiente"
+  };
+}
+
 export function buildApplicationUnifiedRows(
   application: InternalApplicationDetail
 ): ApplicationUnifiedRow[] {
-  const clientName =
-    application.main_contact_name ||
-    application.client?.full_name ||
-    application.client?.email ||
-    "Cliente sin nombre";
-  const rows: ApplicationUnifiedRow[] = [
-    {
-      actionLabel: "Sin accion",
-      actionType: "none",
-      area: "Cliente",
-      detail: joinDetails([application.client?.whatsapp_e164, application.client?.email]),
-      id: "client-main",
-      mainData: clientName,
-      personOrRelation: "Cliente principal",
-      priority: hasValue(application.client?.whatsapp_e164) ? "Baja" : "Media",
-      relatedId: application.client?.id,
-      responsible: "Cliente",
-      status: hasValue(clientName) && hasValue(application.client?.whatsapp_e164)
-        ? "Completo"
-        : "Requiere accion"
-    },
-    {
-      actionLabel: "Sin accion",
-      actionType: "none",
-      area: "Solicitud",
-      detail: joinDetails([
-        `Origen: ${joinDetails([application.origin_country, application.origin_city])}`,
-        `Destino: ${joinDetails([application.arrival_country, application.arrival_city])}`,
-        `${application.total_people} persona(s)`
-      ]),
-      id: "application-summary",
-      mainData: application.process_reason ?? "Motivo no especificado",
-      personOrRelation: "Grupo completo",
-      priority: application.process_reason ? "Baja" : "Media",
-      relatedId: application.id,
-      responsible: "Cliente",
-      status:
-        hasValue(application.origin_country) &&
-        hasValue(application.origin_city) &&
-        hasValue(application.total_people)
-          ? "Completo"
-          : "Requiere accion"
-    }
-  ];
+  const travelerIdentifiers = buildTravelerIdentifierMap(application.travelers);
+  const rows: ApplicationUnifiedRow[] = [];
 
-  for (const traveler of application.travelers) {
+  application.travelers.forEach((traveler, index) => {
     const status = getTravelerStatus(traveler);
+    const identifier = travelerIdentifiers.get(traveler.id)?.display ?? getTravelerDisplayIdentifier(index, traveler);
 
     rows.push({
-      actionLabel: "Sin accion",
+      actionLabel: "Ver",
       actionType: "none",
-      area: "Viajero",
       detail: joinDetails([
         traveler.age ? `Edad: ${traveler.age}` : null,
-        traveler.whatsapp_e164 ? `WhatsApp: ${traveler.whatsapp_e164}` : null,
-        traveler.is_main_client ? "Cliente principal" : null
+        traveler.whatsapp_e164 ? `WhatsApp: ${traveler.whatsapp_e164}` : "Sin WhatsApp propio",
+        status === "Completo" ? "Sin pendientes" : "Datos por revisar"
       ]),
       id: `traveler-${traveler.id}`,
+      identifier,
       mainData: traveler.nationality ? `Nacionalidad: ${traveler.nationality}` : "Nacionalidad pendiente",
-      personOrRelation: joinDetails([traveler.full_name, traveler.relationship]),
+      nameOrReference: traveler.full_name || "Viajero sin nombre",
       priority: status === "Completo" ? "Baja" : "Media",
       relatedId: traveler.id,
       responsible: "Cliente",
-      status
+      status,
+      type: "Viajero"
     });
-  }
+  });
 
-  if (application.travelers.length < application.total_people) {
+  for (let index = application.travelers.length; index < application.total_people; index += 1) {
     rows.push({
-      actionLabel: "Esperar cliente",
-      actionType: "none",
-      area: "Viajero",
-      detail: `${application.travelers.length} de ${application.total_people} persona(s) agregadas`,
-      id: "traveler-missing",
-      mainData: "Faltan personas que viajan",
-      personOrRelation: "Grupo completo",
+      actionLabel: "Solicitar",
+      actionType: "upcoming",
+      detail: "Se requiere registrar esta persona para continuar el seguimiento.",
+      id: `traveler-missing-${index + 1}`,
+      identifier: getTravelerBaseIdentifier(index),
+      mainData: "Falta persona que viaja",
+      nameOrReference: "Pendiente",
       priority: "Alta",
       responsible: "Cliente",
-      status: "Pendiente"
+      status: "Pendiente",
+      type: "Viajero"
     });
   }
 
   if (application.receiving_contact) {
     rows.push({
-      actionLabel: "Sin accion",
+      actionLabel: "Ver",
       actionType: "none",
-      area: "Contacto que recibe",
       detail: joinDetails([
-        application.receiving_contact.whatsapp_e164,
+        application.receiving_contact.whatsapp_e164
+          ? `WhatsApp: ${application.receiving_contact.whatsapp_e164}`
+          : "Sin WhatsApp",
+        application.receiving_contact.relationship,
         application.receiving_contact.address_reference
       ]),
       id: `receiving-contact-${application.receiving_contact.id}`,
+      identifier: "CR-01",
       mainData: joinDetails([
-        application.receiving_contact.state_name,
-        application.receiving_contact.city_other ?? application.receiving_contact.city_name
+        application.receiving_contact.city_other ?? application.receiving_contact.city_name,
+        application.receiving_contact.state_name
       ]),
-      personOrRelation: joinDetails([
-        application.receiving_contact.full_name,
-        application.receiving_contact.relationship
-      ]),
+      nameOrReference: application.receiving_contact.full_name,
       priority: hasValue(application.receiving_contact.whatsapp_e164) ? "Baja" : "Media",
       relatedId: application.receiving_contact.id,
       responsible: "Cliente",
@@ -381,90 +447,81 @@ export function buildApplicationUnifiedRows(
         hasValue(application.receiving_contact.whatsapp_e164) &&
         hasValue(application.receiving_contact.address_reference)
           ? "Completo"
-          : "Requiere accion"
+          : "Requiere accion",
+      type: "Contacto que recibe"
     });
   } else {
     rows.push({
-      actionLabel: "Esperar cliente",
-      actionType: "none",
-      area: "Contacto que recibe",
-      detail: "Sin contacto registrado",
+      actionLabel: "Solicitar",
+      actionType: "upcoming",
+      detail: "Se requiere registrar persona que recibe en destino",
       id: "receiving-contact-missing",
+      identifier: "CR-01",
       mainData: "Falta contacto que recibe",
-      personOrRelation: "Destino",
+      nameOrReference: "Pendiente",
       priority: "Alta",
       responsible: "Cliente",
-      status: "Pendiente"
+      status: "Pendiente",
+      type: "Contacto que recibe"
     });
   }
 
-  rows.push({
-    actionLabel: application.requested_date_status === "requested" ? "Autorizar / rechazar" : "Sin accion",
-    actionType: application.requested_date_status === "requested" ? "approve_date" : "none",
-    area: "Fecha",
-    detail: joinDetails([
-      application.requested_date?.date
-        ? `Solicitada: ${application.requested_date.date}`
-        : "Sin fecha solicitada",
-      application.approved_date?.date ? `Autorizada: ${application.approved_date.date}` : null,
-      application.requested_date?.location_city ?? application.approved_date?.location_city
-    ]),
-    id: "date-row",
-    mainData: REQUESTED_DATE_STATUS_LABELS[application.requested_date_status],
-    personOrRelation: "Grupo completo",
-    priority: application.requested_date_status === "requested" ? "Alta" : "Media",
-    relatedId: application.requested_date_id ?? application.approved_date_id ?? undefined,
-    responsible: getDateResponsible(application),
-    status: getDateStatus(application)
-  });
+  if (shouldShowDateRow(application)) {
+    rows.push(buildDateRow(application));
+  }
 
   for (const documentType of REQUIRED_GENERAL_DOCUMENT_TYPES) {
     rows.push(
       makeDocumentRow({
-        area: "Documento",
         document: findDocument(application, { documentType }),
         documentLabel: GENERAL_DOCUMENT_LABELS[documentType],
         id: `document-general-${documentType}`,
-        relatedTo: "Solicitud"
+        identifier: "SOL",
+        nameOrReference: "Solicitud",
+        type: "Documento general"
       })
     );
   }
 
   for (const traveler of application.travelers) {
+    const identifier = travelerIdentifiers.get(traveler.id)?.base ?? "V-00";
+    const nameOrReference = traveler.full_name || "Viajero sin nombre";
+
     for (const documentType of REQUIRED_TRAVELER_DOCUMENT_TYPES) {
       rows.push(
         makeDocumentRow({
-          area: "Documento",
           document: findDocument(application, {
             documentType,
             travelerId: traveler.id
           }),
           documentLabel: TRAVELER_DOCUMENT_LABELS[documentType],
           id: `document-traveler-${traveler.id}-${documentType}`,
-          relatedTo: traveler.full_name || "Viajero sin nombre"
+          identifier,
+          nameOrReference,
+          type: "Documento"
         })
       );
     }
 
     if (traveler.requires_mexico_entry_review) {
       rows.push({
-        actionLabel: "Proximamente",
+        actionLabel: "Revisar",
         actionType: "review_requirement",
-        area: "Requisito Mexico",
-        detail: traveler.mexico_entry_status,
+        detail: "Requiere validar documentacion previa",
         id: `mexico-review-${traveler.id}`,
+        identifier,
         mainData: "Revision documental Mexico",
-        personOrRelation: traveler.full_name || "Viajero sin nombre",
+        nameOrReference,
         priority: "Media",
         relatedId: traveler.id,
         responsible: "Interno",
-        status: getMexicoRequirementStatus(application, traveler.id)
+        status: getMexicoRequirementStatus(application, traveler.id),
+        type: "Requisito Mexico"
       });
 
       for (const documentType of MEXICO_REVIEW_DOCUMENT_TYPES) {
         rows.push(
           makeDocumentRow({
-            area: "Requisito Mexico",
             document: findDocument(application, {
               documentType,
               isMexico: true,
@@ -472,7 +529,9 @@ export function buildApplicationUnifiedRows(
             }),
             documentLabel: MEXICO_REVIEW_DOCUMENT_LABELS[documentType],
             id: `document-mexico-${traveler.id}-${documentType}`,
-            relatedTo: traveler.full_name || "Viajero sin nombre"
+            identifier,
+            nameOrReference,
+            type: "Requisito Mexico"
           })
         );
       }
