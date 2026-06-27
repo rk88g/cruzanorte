@@ -63,6 +63,7 @@ export type ApplicationUnifiedRow = {
   identifier: string;
   mainData: string;
   nameOrReference: string;
+  payment?: PaymentCommitment;
   priority: UnifiedRowPriority;
   relatedId?: string;
   responsible: "Cliente" | "Interno" | "Sistema";
@@ -423,7 +424,7 @@ function getPaymentPriority(payment: PaymentCommitment): UnifiedRowPriority {
 function appendPaymentRows(rows: ApplicationUnifiedRow[], payments: PaymentCommitment[]) {
   payments.forEach((payment, index) => {
     rows.push({
-      actionLabel: payment.latest_receipt ? "Revisar" : "Ver pago",
+      actionLabel: payment.latest_receipt ? "Ver comprobante" : "Ver pago",
       actionType: "view_payment",
       detail: [
         payment.due_date ? `Vence: ${payment.due_date}` : "Sin fecha limite",
@@ -436,6 +437,7 @@ function appendPaymentRows(rows: ApplicationUnifiedRow[], payments: PaymentCommi
       identifier: `PAY-${String(index + 1).padStart(2, "0")}`,
       mainData: formatMoney(payment.amount, payment.currency),
       nameOrReference: payment.traveler?.full_name ?? payment.concept,
+      payment,
       priority: getPaymentPriority(payment),
       relatedId: payment.id,
       responsible: payment.status === "paid" ? "Sistema" : "Cliente",

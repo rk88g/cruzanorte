@@ -49,6 +49,8 @@ async function logStageUpdate({
   applicationId,
   actorEmail,
   note,
+  pendingPaymentIds,
+  previousStage,
   progress,
   stageLabel,
   stageSlug
@@ -56,6 +58,8 @@ async function logStageUpdate({
   actorEmail: string;
   applicationId: string;
   note?: string;
+  pendingPaymentIds: string[];
+  previousStage: string;
   progress: number;
   stageLabel: string;
   stageSlug: string;
@@ -78,13 +82,20 @@ async function logStageUpdate({
 
   try {
     await supabase.from("activity_logs").insert({
-      action: "application_stage_updated",
+      action:
+        pendingPaymentIds.length > 0
+          ? "stage_advanced_with_pending_blocking_payment"
+          : "application_stage_updated",
       application_id: applicationId,
       entity_id: applicationId,
       entity_type: "application",
       metadata: {
         actor_email: actorEmail,
+        application_id: applicationId,
+        new_stage: stageSlug,
         note: note ?? null,
+        pending_payment_ids: pendingPaymentIds,
+        previous_stage: previousStage,
         progress,
         stage: stageSlug
       },
@@ -155,6 +166,8 @@ export async function updateInternalApplicationStage({
     actorEmail,
     applicationId,
     note: input.note,
+    pendingPaymentIds: input.pending_payment_ids,
+    previousStage: application.current_stage,
     progress: stageConfig.progress,
     stageLabel: stageConfig.label,
     stageSlug: stageConfig.slug

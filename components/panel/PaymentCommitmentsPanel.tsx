@@ -31,6 +31,42 @@ function hasPendingPayments(payments: PaymentCommitment[]) {
   );
 }
 
+function canUploadReceipt(payment: PaymentCommitment) {
+  if (payment.status === "pending" || payment.status === "requested") {
+    return !payment.latest_receipt;
+  }
+
+  if (payment.status === "rejected") {
+    return (
+      !payment.latest_receipt ||
+      payment.latest_receipt.status === "rejected" ||
+      payment.latest_receipt.status === "replacement_requested"
+    );
+  }
+
+  return false;
+}
+
+function getPaymentStateMessage(payment: PaymentCommitment) {
+  if (payment.status === "in_review") {
+    return "Comprobante en revision.";
+  }
+
+  if (payment.status === "paid") {
+    return "Pago registrado.";
+  }
+
+  if (payment.status === "partial") {
+    return "Pago parcial registrado. La carga adicional queda para una fase posterior.";
+  }
+
+  if (payment.status === "rejected") {
+    return payment.latest_receipt?.admin_notes ?? "El comprobante fue rechazado.";
+  }
+
+  return null;
+}
+
 export function PaymentCommitmentsPanel({ payments }: PaymentCommitmentsPanelProps) {
   const hasPending = hasPendingPayments(payments);
 
@@ -94,9 +130,23 @@ export function PaymentCommitmentsPanel({ payments }: PaymentCommitmentsPanelPro
                     </p>
                   ) : null}
                 </div>
-                {payment.status === "paid" || payment.status === "cancelled" ? null : (
-                  <PaymentReceiptUploadForm />
-                )}
+                <div className="w-full lg:w-auto">
+                  {canUploadReceipt(payment) ? (
+                    <PaymentReceiptUploadForm
+                      defaultAmount={payment.amount}
+                      label={
+                        payment.status === "rejected"
+                          ? "Subir nuevo comprobante"
+                          : "Subir comprobante"
+                      }
+                      paymentId={payment.id}
+                    />
+                  ) : getPaymentStateMessage(payment) ? (
+                    <div className="rounded-xl border border-border bg-card p-4 text-sm font-semibold text-foreground">
+                      {getPaymentStateMessage(payment)}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </article>
           ))}

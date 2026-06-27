@@ -26,7 +26,8 @@ export const internalStageUpdateSchema = z.object({
   note: z.preprocess(
     emptyValueToUndefined,
     z.string().trim().max(2000, "Usa maximo 2000 caracteres.").optional()
-  )
+  ),
+  pending_payment_ids: z.array(z.string().uuid("Pago invalido.")).default([])
 });
 
 export type InternalStageUpdateData = z.output<typeof internalStageUpdateSchema>;

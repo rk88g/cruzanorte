@@ -336,8 +336,13 @@ export const DOCUMENT_UPLOAD_ALLOWED_MIME_TYPES = [
 ] as const;
 
 export const DOCUMENT_UPLOAD_BUCKET = "documents";
+export const PAYMENT_RECEIPT_UPLOAD_BUCKET = "payment-receipts";
 export const DOCUMENTATION_STAGE: ApplicationStage = "documentacion";
 export const DOCUMENTATION_PROGRESS = 45;
+
+export const PAYMENT_METHODS = ["manual", "mercadopago", "stripe"] as const;
+
+export const PAYMENT_PROVIDERS = ["none", "mercadopago", "stripe"] as const;
 
 export const PAYMENT_SCOPES = [
   "application",

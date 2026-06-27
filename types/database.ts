@@ -73,6 +73,9 @@ export type PaymentStatus =
   | "conditioned"
   | "special_agreement";
 
+export type PaymentMethod = "manual" | "mercadopago" | "stripe";
+export type PaymentProvider = "none" | "mercadopago" | "stripe";
+
 export type PaymentType =
   | "fixed"
   | "percentage"
@@ -301,6 +304,9 @@ export type PaymentRow = {
   currency: string;
   payment_type: PaymentType;
   payment_scope: PaymentScope;
+  payment_method: PaymentMethod;
+  payment_provider: PaymentProvider;
+  provider_reference: string | null;
   percentage: number | null;
   due_date: string | null;
   status: PaymentStatus;

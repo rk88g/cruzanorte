@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { APPLICATION_STAGES } from "@/lib/constants";
+import type { PaymentCommitment } from "@/lib/payments";
 import type { ApplicationStage } from "@/types/database";
 
 type ApplicationStageControlProps = {
   applicationId: string;
+  blockingPayments?: PaymentCommitment[];
   currentStage: ApplicationStage;
-  hasBlockingPendingPayments?: boolean;
 };
 
 type StageResponse = {
@@ -21,8 +22,8 @@ type StageResponse = {
 
 export function ApplicationStageControl({
   applicationId,
-  currentStage,
-  hasBlockingPendingPayments = false
+  blockingPayments = [],
+  currentStage
 }: ApplicationStageControlProps) {
   const router = useRouter();
   const [selectedStage, setSelectedStage] = useState<ApplicationStage>(currentStage);
@@ -35,14 +36,26 @@ export function ApplicationStageControl({
     [selectedStage]
   );
   const currentStageConfig = APPLICATION_STAGES.find((stage) => stage.slug === currentStage);
+  const hasBlockingPendingPayments = blockingPayments.length > 0;
 
   async function handleSubmit() {
     setError(null);
     setMessage(null);
 
+    if (hasBlockingPendingPayments && !note.trim()) {
+      setError("Agrega el motivo para avanzar con pago pendiente.");
+      return;
+    }
+
+    const blockingPaymentDetail = blockingPayments
+      .map(
+        (payment) =>
+          `${payment.concept} - ${payment.amount} ${payment.currency} - ${payment.status_label} - ${payment.stage ?? "Sin etapa"}`
+      )
+      .join("\n");
     const confirmed = window.confirm(
       hasBlockingPendingPayments
-        ? "Hay compromisos de pago pendientes. Deseas avanzar la etapa de todos modos?"
+        ? `Esta solicitud tiene pagos pendientes que bloquean el avance.\n\n${blockingPaymentDetail}\n\nDeseas avanzar de todos modos?`
         : "Seguro que deseas cambiar la etapa de esta solicitud?"
     );
 
@@ -60,7 +73,8 @@ export function ApplicationStageControl({
         },
         body: JSON.stringify({
           current_stage: selectedStage,
-          note
+          note,
+          pending_payment_ids: blockingPayments.map((payment) => payment.id)
         })
       });
       const result = (await response.json()) as StageResponse;
@@ -101,6 +115,26 @@ export function ApplicationStageControl({
           Nuevo avance: {selectedStageConfig?.progress ?? 0}%
         </div>
       </div>
+
+      {hasBlockingPendingPayments ? (
+        <div className="mt-5">
+          <Alert variant="danger">
+            Esta solicitud tiene pagos pendientes que bloquean el avance. Para avanzar de
+            todos modos, agrega una nota interna con el motivo.
+          </Alert>
+          <div className="mt-3 grid gap-2">
+            {blockingPayments.map((payment) => (
+              <div
+                className="rounded-xl border border-border bg-background/60 p-3 text-sm text-muted-foreground"
+                key={payment.id}
+              >
+                <span className="font-semibold text-foreground">{payment.concept}</span>{" "}
+                - {payment.amount} {payment.currency} - {payment.status_label}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] lg:items-end">
         <div>

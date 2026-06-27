@@ -47,6 +47,9 @@ export default async function InternalApplicationDetailPage({
   }
 
   const payments = await getPaymentsForApplication(application.id);
+  const blockingPayments = payments.filter(
+    (payment) => payment.blocks_progress && payment.status !== "paid"
+  );
   const hasBlockingPayments = hasBlockingPendingPayments(payments);
   const unifiedRows = buildApplicationUnifiedRows(application, payments);
 
@@ -70,8 +73,8 @@ export default async function InternalApplicationDetailPage({
         />
         <ApplicationStageControl
           applicationId={application.id}
+          blockingPayments={blockingPayments}
           currentStage={application.current_stage}
-          hasBlockingPendingPayments={hasBlockingPayments}
         />
         <ApplicationPaymentsPanel
           applicationId={application.id}

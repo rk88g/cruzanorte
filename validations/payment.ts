@@ -97,9 +97,23 @@ export const internalPaymentCreateSchema = z
   });
 
 export const internalPaymentStatusUpdateSchema = z.object({
+  admin_notes: optionalTextSchema,
+  amount_reported: z.preprocess(
+    emptyValueToUndefined,
+    z.coerce.number().positive("Ingresa un monto valido.").optional()
+  ),
+  receipt_id: optionalUuidSchema,
   status: z.enum(paymentStatusValues, {
     errorMap: () => ({ message: "Selecciona un estado valido." })
   })
+}).superRefine((value, context) => {
+  if (value.status === "rejected" && !value.admin_notes) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Agrega una nota para rechazar el comprobante.",
+      path: ["admin_notes"]
+    });
+  }
 });
 
 export type InternalPaymentCreateData = z.output<typeof internalPaymentCreateSchema>;

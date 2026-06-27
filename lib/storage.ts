@@ -1,4 +1,7 @@
-import { DOCUMENT_UPLOAD_BUCKET } from "@/lib/constants";
+import {
+  DOCUMENT_UPLOAD_BUCKET,
+  PAYMENT_RECEIPT_UPLOAD_BUCKET
+} from "@/lib/constants";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export function sanitizeStorageFileName(fileName: string) {
@@ -45,6 +48,41 @@ export async function createDocumentSignedUrl(filePath: string) {
 
   if (error || !data?.signedUrl) {
     throw new Error("Could not create signed document URL.");
+  }
+
+  return data.signedUrl;
+}
+
+export async function uploadPrivatePaymentReceiptFile({
+  contentType,
+  file,
+  filePath
+}: {
+  contentType: string;
+  file: ArrayBuffer;
+  filePath: string;
+}) {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.storage
+    .from(PAYMENT_RECEIPT_UPLOAD_BUCKET)
+    .upload(filePath, file, {
+      contentType,
+      upsert: false
+    });
+
+  if (error) {
+    throw new Error("Could not upload payment receipt file.");
+  }
+}
+
+export async function createPaymentReceiptSignedUrl(filePath: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.storage
+    .from(PAYMENT_RECEIPT_UPLOAD_BUCKET)
+    .createSignedUrl(filePath, 60 * 5);
+
+  if (error || !data?.signedUrl) {
+    throw new Error("Could not create signed payment receipt URL.");
   }
 
   return data.signedUrl;

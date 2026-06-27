@@ -4,12 +4,14 @@ import { FileText, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DocumentPreviewModal } from "@/components/internal/DocumentPreviewModal";
 import { InternalDateDecisionActions } from "@/components/internal/InternalDateDecisionActions";
+import { PaymentReceiptModal } from "@/components/internal/PaymentReceiptModal";
 import type {
   ApplicationUnifiedDocument,
   ApplicationUnifiedRow,
   UnifiedRowPriority,
   UnifiedRowStatus
 } from "@/lib/internal/applicationDetail";
+import type { PaymentCommitment } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import type { RequestedDateStatus } from "@/types/database";
 
@@ -78,11 +80,13 @@ function matchesQuery(row: ApplicationUnifiedRow, query: string) {
 function RowAction({
   applicationId,
   onSelectDocument,
+  onSelectPayment,
   requestedDateStatus,
   row
 }: {
   applicationId: string;
   onSelectDocument: (document: ApplicationUnifiedDocument) => void;
+  onSelectPayment: (payment: PaymentCommitment) => void;
   requestedDateStatus: RequestedDateStatus;
   row: ApplicationUnifiedRow;
 }) {
@@ -91,6 +95,19 @@ function RowAction({
       <button
         className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary hover:text-primary"
         onClick={() => onSelectDocument(row.document as ApplicationUnifiedDocument)}
+        type="button"
+      >
+        <FileText className="h-4 w-4" aria-hidden="true" />
+        {row.actionLabel}
+      </button>
+    );
+  }
+
+  if (row.actionType === "view_payment" && row.payment?.latest_receipt) {
+    return (
+      <button
+        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground shadow-soft transition hover:border-primary hover:text-primary"
+        onClick={() => onSelectPayment(row.payment as PaymentCommitment)}
         type="button"
       >
         <FileText className="h-4 w-4" aria-hidden="true" />
@@ -126,6 +143,7 @@ export function ApplicationUnifiedTable({
 }: ApplicationUnifiedTableProps) {
   const [query, setQuery] = useState("");
   const [selectedDocument, setSelectedDocument] = useState<ApplicationUnifiedDocument | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentCommitment | null>(null);
   const visibleRows = useMemo(
     () => rows.filter((row) => matchesQuery(row, query)),
     [query, rows]
@@ -198,6 +216,7 @@ export function ApplicationUnifiedTable({
                   <RowAction
                     applicationId={applicationId}
                     onSelectDocument={setSelectedDocument}
+                    onSelectPayment={setSelectedPayment}
                     requestedDateStatus={requestedDateStatus}
                     row={row}
                   />
@@ -251,6 +270,7 @@ export function ApplicationUnifiedTable({
                   <RowAction
                     applicationId={applicationId}
                     onSelectDocument={setSelectedDocument}
+                    onSelectPayment={setSelectedPayment}
                     requestedDateStatus={requestedDateStatus}
                     row={row}
                   />
@@ -273,6 +293,10 @@ export function ApplicationUnifiedTable({
       <DocumentPreviewModal
         document={selectedDocument}
         onClose={() => setSelectedDocument(null)}
+      />
+      <PaymentReceiptModal
+        onClose={() => setSelectedPayment(null)}
+        payment={selectedPayment}
       />
     </section>
   );

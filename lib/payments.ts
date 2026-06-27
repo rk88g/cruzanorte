@@ -10,7 +10,7 @@ import type {
 import type { PaymentReceiptRow, PaymentRow, TravelerRow } from "@/types/database";
 
 const PAYMENT_SELECT =
-  "id, application_id, client_id, traveler_id, mexico_requirement_id, stage, concept, description, amount, currency, payment_type, payment_scope, percentage, due_date, status, blocks_progress, is_extra_payment, is_financed, financing_months, promotion_name, discount_amount, discount_percentage, created_by, created_at, updated_at";
+  "id, application_id, client_id, traveler_id, mexico_requirement_id, stage, concept, description, amount, currency, payment_type, payment_scope, payment_method, payment_provider, provider_reference, percentage, due_date, status, blocks_progress, is_extra_payment, is_financed, financing_months, promotion_name, discount_amount, discount_percentage, created_by, created_at, updated_at";
 
 const PAYMENT_RECEIPT_SELECT =
   "id, payment_id, application_id, traveler_id, file_path, file_name, amount_reported, currency, status, admin_notes, client_notes, uploaded_by, reviewed_by, created_at, reviewed_at";
@@ -18,11 +18,14 @@ const PAYMENT_RECEIPT_SELECT =
 export type PaymentReceiptSummary = Pick<
   PaymentReceiptRow,
   | "amount_reported"
+  | "admin_notes"
+  | "client_notes"
   | "created_at"
   | "currency"
   | "file_name"
   | "file_path"
   | "id"
+  | "reviewed_at"
   | "status"
 >;
 
@@ -43,7 +46,10 @@ export type PaymentCommitment = Pick<
   | "is_extra_payment"
   | "is_financed"
   | "payment_scope"
+  | "payment_method"
+  | "payment_provider"
   | "promotion_name"
+  | "provider_reference"
   | "stage"
   | "status"
   | "traveler_id"
@@ -108,16 +114,22 @@ function toPaymentCommitment({
       ? {
           amount_reported:
             receipt.amount_reported === null ? null : toNumber(receipt.amount_reported),
+          admin_notes: receipt.admin_notes,
+          client_notes: receipt.client_notes,
           created_at: receipt.created_at,
           currency: receipt.currency,
           file_name: receipt.file_name,
           file_path: receipt.file_path,
           id: receipt.id,
+          reviewed_at: receipt.reviewed_at,
           status: receipt.status
         }
       : null,
     payment_scope: payment.payment_scope,
+    payment_method: payment.payment_method,
+    payment_provider: payment.payment_provider,
     promotion_name: payment.promotion_name,
+    provider_reference: payment.provider_reference,
     scope_label: PAYMENT_SCOPE_LABELS[payment.payment_scope],
     stage: payment.stage,
     status: payment.status,
@@ -283,7 +295,10 @@ export async function createInternalPayment(
       is_extra_payment: input.is_extra_payment,
       is_financed: input.is_financed,
       payment_scope: input.payment_scope,
+      payment_method: "manual",
+      payment_provider: "none",
       payment_type: "fixed",
+      provider_reference: null,
       promotion_name: input.promotion_name ?? null,
       stage: input.stage,
       status: input.status,
@@ -337,6 +352,47 @@ export async function updateInternalPaymentStatus(
 
   if (error) {
     throw new Error("Could not update payment status.");
+  }
+
+  if (input.receipt_id) {
+    const receiptUpdate =
+      input.status === "paid"
+        ? {
+            admin_notes: input.admin_notes ?? null,
+            reviewed_at: new Date().toISOString(),
+            status: "accepted" as const
+          }
+        : input.status === "in_review"
+          ? {
+              admin_notes: input.admin_notes ?? null,
+              status: "in_review" as const
+            }
+          : input.status === "rejected"
+            ? {
+                admin_notes: input.admin_notes ?? null,
+                reviewed_at: new Date().toISOString(),
+                status: "rejected" as const
+              }
+            : input.status === "partial"
+              ? {
+                  admin_notes: input.admin_notes ?? null,
+                  amount_reported: input.amount_reported ?? null,
+                  reviewed_at: new Date().toISOString(),
+                  status: "accepted" as const
+                }
+              : null;
+
+    if (receiptUpdate) {
+      const { error: receiptError } = await supabase
+        .from("payment_receipts")
+        .update(receiptUpdate)
+        .eq("id", input.receipt_id)
+        .eq("payment_id", paymentId);
+
+      if (receiptError) {
+        throw new Error("Could not update payment receipt status.");
+      }
+    }
   }
 
   return {
