@@ -120,6 +120,18 @@ export const APPLICATION_COUNTRY_OPTIONS = [
   "Otro"
 ] as const;
 
+export const TRAVELER_RELATIONSHIP_OPTIONS = [
+  "Cliente principal",
+  "Esposo/a",
+  "Hijo/a",
+  "Padre",
+  "Madre",
+  "Hermano/a",
+  "Familiar",
+  "Amigo/a",
+  "Otro"
+] as const;
+
 export const APPLICATION_STATUSES = [
   "draft",
   "active",

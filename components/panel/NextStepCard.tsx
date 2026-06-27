@@ -1,91 +1,50 @@
 import { ArrowRight, Clock3 } from "lucide-react";
 import Link from "next/link";
+import type { ClientActiveApplication } from "@/lib/applications";
 import { CLIENT_ROUTES } from "@/lib/routes";
-import type { ApplicationStage } from "@/types/database";
 
 type NextStepCardProps = {
-  currentStage: ApplicationStage;
-  hasActiveApplication: boolean;
+  activeApplication: ClientActiveApplication | null;
 };
 
 type NextStepContent = {
-  title: string;
-  description: string;
+  actionHref?: string;
   actionLabel: string;
+  description: string;
+  title: string;
 };
 
-const NEXT_STEP_BY_STAGE: Record<ApplicationStage, NextStepContent> = {
-  bienvenida: {
-    title: "Inicia tu registro",
-    description:
-      "Completa tu informacion inicial para comenzar a organizar tu proceso.",
-    actionLabel: "Comenzar registro"
-  },
-  informacion_inicial: {
-    title: "Agregar personas que viajan",
-    description:
-      "El siguiente paso sera agregar a las personas incluidas en tu proceso.",
-    actionLabel: "Disponible proximamente"
-  },
-  fecha_solicitada: {
-    title: "Da seguimiento a la fecha solicitada",
-    description:
-      "Mantente atento a la revision de disponibilidad y a las indicaciones del equipo.",
-    actionLabel: "Ver solicitud"
-  },
-  fecha_autorizada: {
-    title: "Prepara la siguiente etapa",
-    description:
-      "Organiza los datos necesarios para avanzar con documentacion y revision de expediente.",
-    actionLabel: "Ver preparacion"
-  },
-  documentacion: {
-    title: "Carga tu documentacion",
-    description:
-      "Reune los documentos solicitados y conserva archivos claros para su revision profesional.",
-    actionLabel: "Ir a documentacion"
-  },
-  revision_expediente: {
-    title: "Atiende la revision del expediente",
-    description:
-      "El equipo revisara la informacion disponible y podra solicitar ajustes o datos adicionales.",
-    actionLabel: "Ver revision"
-  },
-  preparacion_viaje: {
-    title: "Revisa la preparacion de viaje",
-    description:
-      "Consulta proximas indicaciones y prepara cada elemento con orden antes de la fecha definida.",
-    actionLabel: "Ver preparacion"
-  },
-  llegada_oficina: {
-    title: "Confirma llegada a oficina",
-    description:
-      "Sigue las indicaciones operativas para tu llegada y conserva tus datos de contacto actualizados.",
-    actionLabel: "Ver indicaciones"
-  },
-  acompanamiento_programado: {
-    title: "Consulta el acompanamiento programado",
-    description:
-      "Revisa el seguimiento asignado y los puntos de comunicacion para esta etapa del proceso.",
-    actionLabel: "Ver acompanamiento"
-  },
-  en_destino: {
-    title: "Actualiza tu llegada",
-    description:
-      "Comparte la informacion necesaria para cerrar el seguimiento operativo de esta fase.",
-    actionLabel: "Actualizar estado"
-  },
-  bienvenido: {
-    title: "Servicio finalizado",
-    description:
-      "Tu proceso aparece como finalizado. Conserva tus documentos y comunicaciones importantes.",
-    actionLabel: "Ver resumen"
+function getNextStepContent(
+  activeApplication: ClientActiveApplication | null
+): NextStepContent {
+  if (!activeApplication) {
+    return {
+      title: "Inicia tu registro",
+      description: "Completa tu informacion inicial para comenzar a organizar tu proceso.",
+      actionLabel: "Comenzar registro",
+      actionHref: CLIENT_ROUTES.registro
+    };
   }
-};
 
-export function NextStepCard({ currentStage, hasActiveApplication }: NextStepCardProps) {
-  const content = NEXT_STEP_BY_STAGE[currentStage];
-  const canStartRegistration = !hasActiveApplication;
+  if (activeApplication.travelers_count < activeApplication.total_people) {
+    return {
+      title: "Agrega las personas que viajan",
+      description: "Completa la informacion de las personas incluidas en tu proceso.",
+      actionLabel: "Agregar personas",
+      actionHref: CLIENT_ROUTES.personas
+    };
+  }
+
+  return {
+    title: "Contacto que recibe",
+    description:
+      "El siguiente paso sera agregar la informacion de la persona que recibe.",
+    actionLabel: "Disponible proximamente"
+  };
+}
+
+export function NextStepCard({ activeApplication }: NextStepCardProps) {
+  const content = getNextStepContent(activeApplication);
 
   return (
     <article className="rounded-2xl border border-border bg-card p-5 shadow-premium backdrop-blur-xl sm:p-6">
@@ -106,17 +65,17 @@ export function NextStepCard({ currentStage, hasActiveApplication }: NextStepCar
       </p>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        {canStartRegistration ? (
+        {content.actionHref ? (
           <Link
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-premium transition hover:bg-accent sm:w-auto"
-            href={CLIENT_ROUTES.registro}
+            href={content.actionHref}
           >
             {content.actionLabel}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         ) : (
           <button
-            className="inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground opacity-70 shadow-premium sm:w-auto"
+            className="inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground opacity-70 shadow-premium sm:w-auto"
             disabled
             type="button"
           >

@@ -1,5 +1,6 @@
 import { CreditCard, FileText, MessageSquareText, UserRound, ClipboardList } from "lucide-react";
 import Link from "next/link";
+import type { ClientActiveApplication } from "@/lib/applications";
 import { CLIENT_ROUTES } from "@/lib/routes";
 
 const QUICK_ACTIONS = [
@@ -26,10 +27,16 @@ const QUICK_ACTIONS = [
 ];
 
 type QuickActionsProps = {
-  hasActiveApplication: boolean;
+  activeApplication: ClientActiveApplication | null;
 };
 
-export function QuickActions({ hasActiveApplication }: QuickActionsProps) {
+export function QuickActions({ activeApplication }: QuickActionsProps) {
+  const firstActionHref = activeApplication ? CLIENT_ROUTES.personas : CLIENT_ROUTES.registro;
+  const firstActionTitle = activeApplication ? "Agregar personas" : "Iniciar registro";
+  const firstActionDescription = activeApplication
+    ? "Personas incluidas en el proceso guiado."
+    : "Informacion inicial del proceso guiado.";
+
   return (
     <section className="mt-6">
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -44,16 +51,14 @@ export function QuickActions({ hasActiveApplication }: QuickActionsProps) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Link
           className="flex min-h-32 flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition hover:border-primary"
-          href={CLIENT_ROUTES.registro}
+          href={firstActionHref}
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
             <ClipboardList className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="mt-4 text-sm font-semibold text-foreground">Iniciar registro</span>
+          <span className="mt-4 text-sm font-semibold text-foreground">{firstActionTitle}</span>
           <span className="mt-1 text-xs leading-5 text-muted-foreground">
-            {hasActiveApplication
-              ? "Consulta el estado de tu registro inicial."
-              : "Informacion inicial del proceso guiado."}
+            {firstActionDescription}
           </span>
         </Link>
 

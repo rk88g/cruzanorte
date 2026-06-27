@@ -26,7 +26,34 @@ export type ClientActiveApplication = Pick<
   | "origin_city"
   | "notes_public"
   | "updated_at"
->;
+> & {
+  travelers_count: number;
+};
+
+type ActiveApplicationRow = Omit<ClientActiveApplication, "travelers_count">;
+
+async function getTravelerCountForApplication(applicationId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { count, error } = await supabase
+    .from("travelers")
+    .select("id", { count: "exact", head: true })
+    .eq("application_id", applicationId);
+
+  if (error) {
+    throw new Error("Could not count travelers.");
+  }
+
+  return count ?? 0;
+}
+
+async function withTravelerCount(application: ActiveApplicationRow) {
+  const travelersCount = await getTravelerCountForApplication(application.id);
+
+  return {
+    ...application,
+    travelers_count: travelersCount
+  };
+}
 
 export type StartApplicationResult =
   | {
@@ -55,7 +82,11 @@ export async function getActiveApplicationForClient(clientId: string) {
     throw new Error("Could not read active application.");
   }
 
-  return data;
+  if (!data) {
+    return null;
+  }
+
+  return withTravelerCount(data);
 }
 
 function buildInitialNotes(input: ApplicationStart) {
@@ -131,6 +162,9 @@ export async function startApplicationForClient(
 
   return {
     status: "created",
-    application: data
+    application: {
+      ...data,
+      travelers_count: 0
+    }
   };
 }

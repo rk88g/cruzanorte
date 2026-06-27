@@ -46,14 +46,11 @@ export function PanelDashboard({ activeApplication, session }: PanelDashboardPro
         <ClientProcessTimeline currentStage={currentStage} progress={currentProgress} />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-          <NextStepCard
-            currentStage={currentStage}
-            hasActiveApplication={Boolean(activeApplication)}
-          />
+          <NextStepCard activeApplication={activeApplication} />
           <AccountSummaryCard session={session} />
         </div>
 
-        <QuickActions hasActiveApplication={Boolean(activeApplication)} />
+        <QuickActions activeApplication={activeApplication} />
       </div>
     </section>
   );

@@ -9,6 +9,12 @@ export {
   type ApplicationStartInput
 } from "@/validations/application";
 
+export {
+  travelerSchema,
+  type TravelerData,
+  type TravelerInput
+} from "@/validations/traveler";
+
 export const whatsappNumberSchema = z
   .string()
   .min(1, "Ingresa un numero WhatsApp.")

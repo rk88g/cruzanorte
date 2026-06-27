@@ -7,6 +7,21 @@ import { cn } from "@/lib/utils";
 
 type CountryCodeSelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
+const countryCodeLabels: Record<string, string> = {
+  "+52": "Mexico (+52)",
+  "+1": "Estados Unidos (+1)",
+  "+57": "Colombia (+57)",
+  "+502": "Guatemala (+502)",
+  "+504": "Honduras (+504)",
+  "+503": "El Salvador (+503)",
+  "+505": "Nicaragua (+505)",
+  "+506": "Costa Rica (+506)",
+  "+507": "Panama (+507)",
+  "+58": "Venezuela (+58)",
+  "+593": "Ecuador (+593)",
+  "+51": "Peru (+51)"
+};
+
 export const CountryCodeSelect = forwardRef<HTMLSelectElement, CountryCodeSelectProps>(
   function CountryCodeSelect({ className, ...props }, ref) {
     return (
@@ -21,7 +36,7 @@ export const CountryCodeSelect = forwardRef<HTMLSelectElement, CountryCodeSelect
         >
           {COUNTRY_CODE_OPTIONS.map((country) => (
             <option className="bg-background text-foreground" key={country.value} value={country.value}>
-              {country.label}
+              {countryCodeLabels[country.value] ?? country.label}
             </option>
           ))}
         </select>

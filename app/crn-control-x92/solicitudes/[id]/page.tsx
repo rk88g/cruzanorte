@@ -124,20 +124,24 @@ export default async function InternalApplicationDetailPage({
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl sm:p-6">
-          <h2 className="text-xl font-semibold text-foreground">Viajeros</h2>
+          <h2 className="text-xl font-semibold text-foreground">Personas que viajan</h2>
           {application.travelers.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
               Aun no se han agregado personas que viajan.
             </p>
           ) : (
             <div className="mt-5 overflow-x-auto">
-              <table className="min-w-[720px] w-full text-left text-sm">
+              <table className="min-w-[980px] w-full text-left text-sm">
                 <thead className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   <tr>
                     <th className="px-3 py-3 font-semibold">Nombre</th>
+                    <th className="px-3 py-3 font-semibold">Edad</th>
                     <th className="px-3 py-3 font-semibold">Nacionalidad</th>
                     <th className="px-3 py-3 font-semibold">Parentesco</th>
+                    <th className="px-3 py-3 font-semibold">country_code</th>
+                    <th className="px-3 py-3 font-semibold">phone_number</th>
                     <th className="px-3 py-3 font-semibold">whatsapp_e164</th>
+                    <th className="px-3 py-3 font-semibold">Principal</th>
                     <th className="px-3 py-3 font-semibold">Revision Mexico</th>
                   </tr>
                 </thead>
@@ -148,13 +152,25 @@ export default async function InternalApplicationDetailPage({
                         {traveler.full_name}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">
+                        {traveler.age ?? "Sin dato"}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
                         {traveler.nationality ?? "Sin dato"}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">
                         {traveler.relationship ?? "Sin dato"}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">
+                        {traveler.country_code ?? "Sin dato"}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {traveler.phone_number ?? "Sin dato"}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
                         {traveler.whatsapp_e164 ?? "Sin dato"}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {traveler.is_main_client ? "Si" : "No"}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">
                         {traveler.mexico_entry_status}

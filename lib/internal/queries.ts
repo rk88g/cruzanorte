@@ -49,9 +49,13 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     TravelerRow,
     | "id"
     | "full_name"
+    | "age"
     | "nationality"
     | "relationship"
+    | "country_code"
+    | "phone_number"
     | "whatsapp_e164"
+    | "is_main_client"
     | "mexico_entry_status"
   >[];
   process_reason: string | null;
@@ -212,7 +216,9 @@ export async function getInternalApplicationDetail(applicationId: string) {
     getClientsById([application.client_id]),
     supabase
       .from("travelers")
-      .select("id, full_name, nationality, relationship, whatsapp_e164, mexico_entry_status")
+      .select(
+        "id, full_name, age, nationality, relationship, country_code, phone_number, whatsapp_e164, is_main_client, mexico_entry_status"
+      )
       .eq("application_id", application.id)
       .order("created_at", { ascending: true })
   ]);
