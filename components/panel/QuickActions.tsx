@@ -34,21 +34,28 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
   const travelersAreComplete = activeApplication
     ? activeApplication.travelers_count >= activeApplication.total_people
     : false;
+  const receivingContactIsComplete = Boolean(activeApplication?.receiving_contact_exists);
   const firstActionHref = !activeApplication
     ? CLIENT_ROUTES.registro
-    : travelersAreComplete
-      ? CLIENT_ROUTES.contactoRecibe
-      : CLIENT_ROUTES.personas;
+    : !travelersAreComplete
+      ? CLIENT_ROUTES.personas
+      : receivingContactIsComplete
+        ? CLIENT_ROUTES.fecha
+        : CLIENT_ROUTES.contactoRecibe;
   const firstActionTitle = !activeApplication
     ? "Iniciar registro"
-    : travelersAreComplete
-      ? "Contacto que recibe"
-      : "Agregar personas";
+    : !travelersAreComplete
+      ? "Agregar personas"
+      : receivingContactIsComplete
+        ? "Fechas disponibles"
+        : "Contacto que recibe";
   const firstActionDescription = !activeApplication
     ? "Informacion inicial del proceso guiado."
-    : travelersAreComplete
-      ? "Informacion del destino aproximado."
-      : "Personas incluidas en el proceso guiado.";
+    : !travelersAreComplete
+      ? "Personas incluidas en el proceso guiado."
+      : receivingContactIsComplete
+        ? "Solicita una fecha para revision."
+        : "Informacion del destino aproximado.";
 
   return (
     <section className="mt-6">

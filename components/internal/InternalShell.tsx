@@ -1,4 +1,4 @@
-import { BarChart3, FileText, LogOut, ShieldCheck, UsersRound } from "lucide-react";
+import { BarChart3, CalendarDays, FileText, LogOut, ShieldCheck, UsersRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -14,6 +14,11 @@ const INTERNAL_NAVIGATION = [
     label: "Solicitudes",
     href: INTERNAL_ROUTES.applications,
     icon: FileText
+  },
+  {
+    label: "Fechas",
+    href: INTERNAL_ROUTES.dates,
+    icon: CalendarDays
   },
   {
     label: "Clientes",
@@ -81,7 +86,7 @@ export function InternalShell({ children, description, title }: InternalShellPro
       <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            Solo lectura
+            Panel interno
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             {title}

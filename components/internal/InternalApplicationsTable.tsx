@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APPLICATION_STAGES } from "@/lib/constants";
+import { APPLICATION_STAGES, REQUESTED_DATE_STATUS_LABELS } from "@/lib/constants";
 import { getInternalApplicationDetailRoute } from "@/lib/internal/routes";
 import type { InternalApplicationListItem } from "@/lib/internal/queries";
 import type { ApplicationStatus } from "@/types/database";
@@ -24,6 +24,19 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric"
   }).format(new Date(value));
+}
+
+function formatDateOnly(value: string | null | undefined) {
+  if (!value) {
+    return "Sin fecha";
+  }
+
+  return new Intl.DateTimeFormat("es-MX", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 function getStageLabel(stageSlug: string) {
@@ -54,7 +67,7 @@ export function InternalApplicationsTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft backdrop-blur-xl">
       <div className="overflow-x-auto">
-        <table className="min-w-[920px] w-full text-left text-sm">
+        <table className="min-w-[1180px] w-full text-left text-sm">
           <thead className="border-b border-border bg-background/60 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-semibold">Fecha</th>
@@ -63,6 +76,9 @@ export function InternalApplicationsTable({
               <th className="px-4 py-3 font-semibold">Etapa actual</th>
               <th className="px-4 py-3 font-semibold">Avance</th>
               <th className="px-4 py-3 font-semibold">Estado</th>
+              <th className="px-4 py-3 font-semibold">Fecha solicitada</th>
+              <th className="px-4 py-3 font-semibold">Estado de fecha</th>
+              <th className="px-4 py-3 font-semibold">Fecha autorizada</th>
               <th className="px-4 py-3 font-semibold">Personas</th>
               <th className="px-4 py-3 font-semibold">Accion</th>
             </tr>
@@ -87,6 +103,15 @@ export function InternalApplicationsTable({
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">
                   {statusLabels[application.status]}
+                </td>
+                <td className="px-4 py-4 text-muted-foreground">
+                  {formatDateOnly(application.requested_date?.date)}
+                </td>
+                <td className="px-4 py-4 text-muted-foreground">
+                  {REQUESTED_DATE_STATUS_LABELS[application.requested_date_status]}
+                </td>
+                <td className="px-4 py-4 text-muted-foreground">
+                  {formatDateOnly(application.approved_date?.date)}
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">
                   {application.total_people}

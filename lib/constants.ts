@@ -93,6 +93,10 @@ export const DEFAULT_APPLICATION_STAGE: ApplicationStage = "bienvenida";
 export const DEFAULT_APPLICATION_PROGRESS = 5;
 export const APPLICATION_START_STAGE: ApplicationStage = "informacion_inicial";
 export const APPLICATION_START_PROGRESS = 15;
+export const APPLICATION_DATE_REQUEST_STAGE: ApplicationStage = "fecha_solicitada";
+export const APPLICATION_DATE_REQUEST_PROGRESS = 25;
+export const APPLICATION_DATE_APPROVED_STAGE: ApplicationStage = "fecha_autorizada";
+export const APPLICATION_DATE_APPROVED_PROGRESS = 30;
 
 export const PROCESS_REASON_OPTIONS = [
   "Turismo",
@@ -154,6 +158,41 @@ export const APPLICATION_STATUSES = [
   "completed",
   "cancelled"
 ] as const;
+
+export const AVAILABLE_DATE_STATUSES = [
+  "available",
+  "limited",
+  "full",
+  "closed",
+  "cancelled"
+] as const;
+
+export const AVAILABLE_DATE_STATUS_LABELS = {
+  available: "Disponible",
+  limited: "Cupo limitado",
+  full: "Llena",
+  closed: "Cerrada",
+  cancelled: "Cancelada"
+} as const;
+
+export const REQUESTED_DATE_STATUSES = [
+  "none",
+  "requested",
+  "approved",
+  "rejected",
+  "cancelled"
+] as const;
+
+export const REQUESTED_DATE_STATUS_LABELS = {
+  none: "Sin fecha",
+  requested: "Fecha solicitada",
+  approved: "Fecha autorizada",
+  rejected: "Fecha rechazada",
+  cancelled: "Fecha cancelada"
+} as const;
+
+export const AVAILABLE_DATE_LOCATION_OPTIONS = ["Mexicali", "Tijuana", "Otra"] as const;
+export const AVAILABLE_DATE_OTHER_LOCATION_VALUE = "Otra";
 
 export const MEXICO_ENTRY_STATUSES = [
   "not_reviewed",

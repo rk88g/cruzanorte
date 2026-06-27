@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { InternalDateDecisionActions } from "@/components/internal/InternalDateDecisionActions";
 import { ClientProcessTimeline } from "@/components/panel/ClientProcessTimeline";
 import { InternalShell } from "@/components/internal/InternalShell";
-import { APPLICATION_STAGES } from "@/lib/constants";
+import { APPLICATION_STAGES, REQUESTED_DATE_STATUS_LABELS } from "@/lib/constants";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
@@ -40,6 +41,19 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function formatDateOnly(value: string | null | undefined) {
+  if (!value) {
+    return "Sin fecha";
+  }
+
+  return new Intl.DateTimeFormat("es-MX", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 function getStageLabel(stageSlug: string) {
@@ -84,7 +98,7 @@ export default async function InternalApplicationDetailPage({
   return (
     <InternalShell
       title="Detalle de solicitud"
-      description="Informacion principal de la solicitud en modo solo lectura."
+      description="Informacion principal de la solicitud, fecha solicitada y acciones permitidas."
     >
       <div className="space-y-6">
         <Link
@@ -106,6 +120,53 @@ export default async function InternalApplicationDetailPage({
             <DetailItem label="Pais de origen" value={application.origin_country} />
             <DetailItem label="Ciudad de origen" value={application.origin_city} />
             <DetailItem label="Motivo del proceso" value={application.process_reason} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-soft backdrop-blur-xl sm:p-6">
+          <h2 className="text-xl font-semibold text-foreground">Fecha del proceso</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <DetailItem
+              label="Fecha solicitada"
+              value={formatDateOnly(application.requested_date?.date)}
+            />
+            <DetailItem
+              label="Ciudad/base solicitada"
+              value={application.requested_date?.location_city}
+            />
+            <DetailItem
+              label="Estado de fecha"
+              value={REQUESTED_DATE_STATUS_LABELS[application.requested_date_status]}
+            />
+            <DetailItem label="Cupo requerido" value={application.total_people} />
+            <DetailItem
+              label="Fecha autorizada"
+              value={formatDateOnly(application.approved_date?.date)}
+            />
+            <DetailItem
+              label="Ciudad/base autorizada"
+              value={application.approved_date?.location_city}
+            />
+            <DetailItem
+              label="Cupo disponible fecha solicitada"
+              value={application.requested_date?.capacity_available}
+            />
+            <DetailItem
+              label="Notas de fecha"
+              value={application.requested_date_notes}
+            />
+          </div>
+
+          <div className="mt-5 rounded-xl border border-border bg-background/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Acciones de fecha
+            </p>
+            <div className="mt-3">
+              <InternalDateDecisionActions
+                applicationId={application.id}
+                requestedDateStatus={application.requested_date_status}
+              />
+            </div>
           </div>
         </section>
 

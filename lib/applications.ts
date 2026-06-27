@@ -25,6 +25,10 @@ export type ClientActiveApplication = Pick<
   | "origin_country"
   | "origin_city"
   | "notes_public"
+  | "requested_date_id"
+  | "approved_date_id"
+  | "requested_date_status"
+  | "requested_date_notes"
   | "updated_at"
 > & {
   receiving_contact_exists: boolean;
@@ -92,7 +96,7 @@ export async function getActiveApplicationForClient(clientId: string) {
   const { data, error } = await supabase
     .from("applications")
     .select(
-      "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, notes_public, updated_at"
+      "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, requested_date_id, approved_date_id, requested_date_status, requested_date_notes, notes_public, updated_at"
     )
     .eq("client_id", clientId)
     .in("status", [...ACTIVE_APPLICATION_STATUSES])
@@ -168,13 +172,14 @@ export async function startApplicationForClient(
       current_stage: APPLICATION_START_STAGE,
       progress: APPLICATION_START_PROGRESS,
       status: "active",
+      requested_date_status: "none",
       total_people: input.total_people,
       origin_country: input.origin_country,
       origin_city: input.origin_city,
       notes_public: buildInitialNotes(input)
     })
     .select(
-      "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, notes_public, updated_at"
+      "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, requested_date_id, approved_date_id, requested_date_status, requested_date_notes, notes_public, updated_at"
     )
     .single();
 

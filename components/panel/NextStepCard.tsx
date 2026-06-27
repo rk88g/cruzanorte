@@ -45,11 +45,38 @@ function getNextStepContent(
     };
   }
 
+  if (activeApplication.requested_date_status === "approved") {
+    return {
+      title: "Fecha autorizada",
+      description: "Tu fecha fue autorizada. El siguiente paso sera la documentacion.",
+      actionLabel: "Disponible proximamente"
+    };
+  }
+
+  if (activeApplication.requested_date_status === "requested") {
+    return {
+      title: "Fecha en revision",
+      description:
+        "Tu fecha fue enviada para revision. Te avisaremos cuando sea autorizada.",
+      actionLabel: "Ver fechas disponibles",
+      actionHref: CLIENT_ROUTES.fecha
+    };
+  }
+
+  if (activeApplication.requested_date_status === "rejected") {
+    return {
+      title: "Solicita una nueva fecha",
+      description: "La fecha anterior no fue autorizada. Puedes seleccionar otra fecha disponible.",
+      actionLabel: "Ver fechas disponibles",
+      actionHref: CLIENT_ROUTES.fecha
+    };
+  }
+
   return {
-    title: "Fecha solicitada",
-    description:
-      "El siguiente paso sera seleccionar una fecha disponible para tu proceso.",
-    actionLabel: "Disponible proximamente"
+    title: "Solicita una fecha",
+    description: "Selecciona una fecha disponible para enviarla a revision.",
+    actionLabel: "Ver fechas disponibles",
+    actionHref: CLIENT_ROUTES.fecha
   };
 }
 

@@ -2,6 +2,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   ApplicationRow,
   ApplicationStatus,
+  AvailableDateRow,
   ReceivingContactRow,
   TravelerRow,
   UsCityRow,
@@ -34,13 +35,24 @@ type InternalApplication = Pick<
   | "origin_city"
   | "arrival_country"
   | "arrival_city"
+  | "requested_date_id"
+  | "approved_date_id"
+  | "requested_date_status"
+  | "requested_date_notes"
   | "notes_public"
   | "created_at"
   | "updated_at"
 >;
 
+type InternalAvailableDateSummary = Pick<
+  AvailableDateRow,
+  "capacity_available" | "capacity_total" | "date" | "id" | "location_city" | "status"
+>;
+
 export type InternalApplicationListItem = InternalApplication & {
+  approved_date: InternalAvailableDateSummary | null;
   client: InternalClient | null;
+  requested_date: InternalAvailableDateSummary | null;
 };
 
 export type InternalClientListItem = InternalClient & {
@@ -82,10 +94,13 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
 };
 
 const APPLICATION_SELECT =
-  "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, arrival_country, arrival_city, notes_public, created_at, updated_at";
+  "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, arrival_country, arrival_city, requested_date_id, approved_date_id, requested_date_status, requested_date_notes, notes_public, created_at, updated_at";
 
 const CLIENT_SELECT =
   "id, full_name, email, country_code, phone_number, whatsapp_e164, status, created_at";
+
+const AVAILABLE_DATE_SUMMARY_SELECT =
+  "id, date, location_city, capacity_total, capacity_available, status";
 
 const APPLICATION_STATUSES: ApplicationStatus[] = [
   "draft",
@@ -145,6 +160,26 @@ async function getClientsById(clientIds: string[]) {
   return new Map((data ?? []).map((client) => [client.id, client]));
 }
 
+async function getDatesById(dateIds: string[]) {
+  const uniqueDateIds = getUniqueValues(dateIds.filter(Boolean));
+
+  if (uniqueDateIds.length === 0) {
+    return new Map<string, InternalAvailableDateSummary>();
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("available_dates")
+    .select(AVAILABLE_DATE_SUMMARY_SELECT)
+    .in("id", uniqueDateIds);
+
+  if (error) {
+    throw new Error("Could not read date summaries.");
+  }
+
+  return new Map((data ?? []).map((date) => [date.id, date]));
+}
+
 function getUniqueValues(values: string[]) {
   return [...new Set(values)];
 }
@@ -179,13 +214,25 @@ export async function getInternalApplications(limit?: number) {
   }
 
   const applications = data ?? [];
-  const clientsById = await getClientsById(
-    getUniqueValues(applications.map((application) => application.client_id))
-  );
+  const [clientsById, datesById] = await Promise.all([
+    getClientsById(getUniqueValues(applications.map((application) => application.client_id))),
+    getDatesById(
+      applications.flatMap((application) => [
+        application.requested_date_id ?? "",
+        application.approved_date_id ?? ""
+      ])
+    )
+  ]);
 
   return applications.map((application) => ({
     ...application,
-    client: clientsById.get(application.client_id) ?? null
+    approved_date: application.approved_date_id
+      ? datesById.get(application.approved_date_id) ?? null
+      : null,
+    client: clientsById.get(application.client_id) ?? null,
+    requested_date: application.requested_date_id
+      ? datesById.get(application.requested_date_id) ?? null
+      : null
   }));
 }
 
@@ -232,8 +279,9 @@ export async function getInternalApplicationDetail(applicationId: string) {
     return null;
   }
 
-  const [clientsById, travelersResult] = await Promise.all([
+  const [clientsById, datesById, travelersResult] = await Promise.all([
     getClientsById([application.client_id]),
+    getDatesById([application.requested_date_id ?? "", application.approved_date_id ?? ""]),
     supabase
       .from("travelers")
       .select(
@@ -294,7 +342,13 @@ export async function getInternalApplicationDetail(applicationId: string) {
 
   return {
     ...application,
+    approved_date: application.approved_date_id
+      ? datesById.get(application.approved_date_id) ?? null
+      : null,
     client: clientsById.get(application.client_id) ?? null,
+    requested_date: application.requested_date_id
+      ? datesById.get(application.requested_date_id) ?? null
+      : null,
     receiving_contact: receivingContact
       ? {
           ...receivingContact,

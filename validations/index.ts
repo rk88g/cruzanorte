@@ -21,6 +21,19 @@ export {
   type ReceivingContactInput
 } from "@/validations/receivingContact";
 
+export {
+  availableDateFormSchema,
+  availableDateSchema,
+  dateDecisionSchema,
+  requestApplicationDateSchema,
+  type AvailableDateData,
+  type AvailableDateFormInput,
+  type AvailableDateInput,
+  type DateDecisionData,
+  type DateDecisionInput,
+  type RequestApplicationDateInput
+} from "@/validations/availableDate";
+
 export const whatsappNumberSchema = z
   .string()
   .min(1, "Ingresa un numero WhatsApp.")

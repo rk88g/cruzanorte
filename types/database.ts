@@ -107,6 +107,7 @@ export type TimelineStatus =
   | "blocked_by_payment";
 
 export type AvailableDateStatus = "available" | "limited" | "full" | "closed" | "cancelled";
+export type RequestedDateStatus = "none" | "requested" | "approved" | "rejected" | "cancelled";
 export type PaymentPlanItemStatus = "active" | "paused" | "completed" | "cancelled";
 export type PaymentReceiptStatus = "uploaded" | "in_review" | "accepted" | "rejected" | "replacement_requested";
 
@@ -157,6 +158,8 @@ export type ApplicationRow = {
   assigned_user_id: string | null;
   requested_date_id: string | null;
   approved_date_id: string | null;
+  requested_date_status: RequestedDateStatus;
+  requested_date_notes: string | null;
   total_people: number;
   origin_country: string | null;
   origin_city: string | null;
