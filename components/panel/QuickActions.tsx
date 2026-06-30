@@ -106,7 +106,9 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
           </span>
         </Link>
 
-        {QUICK_ACTIONS.map((item) => {
+        {QUICK_ACTIONS.filter(
+          (item) => !(item.title === "Documentacion" && firstActionTitle === "Documentacion")
+        ).map((item) => {
           const isDocumentation = item.title === "Documentacion";
           const content = (
             <>

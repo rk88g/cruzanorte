@@ -1,24 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ApplicationCardsBoard } from "@/components/internal/ApplicationCardsBoard";
+import { ApplicationCriticalAlerts } from "@/components/internal/ApplicationCriticalAlerts";
 import { ApplicationDetailHeader } from "@/components/internal/ApplicationDetailHeader";
 import { ApplicationStageControl } from "@/components/internal/ApplicationStageControl";
+import { ApplicationSummaryStrip } from "@/components/internal/ApplicationSummaryStrip";
 import { ApplicationTimelineBar } from "@/components/internal/ApplicationTimelineBar";
-import { ApplicationUnifiedTable } from "@/components/internal/ApplicationUnifiedTable";
-import { ApplicationPaymentsPanel } from "@/components/internal/ApplicationPaymentsPanel";
 import { InternalShell } from "@/components/internal/InternalShell";
-import { StageChecklistPanel } from "@/components/internal/StageChecklistPanel";
-import {
-  buildApplicationStageChecklist,
-  buildApplicationUnifiedRows
-} from "@/lib/internal/applicationDetail";
+import { buildApplicationCards } from "@/lib/internal/applicationCards";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
-import {
-  getPaymentsForApplication,
-  hasBlockingPendingPayments
-} from "@/lib/payments";
+import { getPaymentsForApplication } from "@/lib/payments";
 
 type InternalApplicationDetailPageProps = {
   params: Promise<{
@@ -54,9 +48,7 @@ export default async function InternalApplicationDetailPage({
   const blockingPayments = payments.filter(
     (payment) => payment.blocks_progress && payment.status !== "paid"
   );
-  const hasBlockingPayments = hasBlockingPendingPayments(payments);
-  const unifiedRows = buildApplicationUnifiedRows(application, payments);
-  const stageChecklistItems = buildApplicationStageChecklist(application, payments);
+  const cardsBoard = buildApplicationCards(application, payments);
 
   return (
     <InternalShell
@@ -76,23 +68,14 @@ export default async function InternalApplicationDetailPage({
           currentStage={application.current_stage}
           progress={application.progress}
         />
+        <ApplicationCriticalAlerts alerts={cardsBoard.alerts} />
+        <ApplicationSummaryStrip items={cardsBoard.summary} />
         <ApplicationStageControl
           applicationId={application.id}
           blockingPayments={blockingPayments}
           currentStage={application.current_stage}
         />
-        <ApplicationPaymentsPanel
-          applicationId={application.id}
-          hasBlockingPendingPayments={hasBlockingPayments}
-          payments={payments}
-          travelers={application.travelers}
-        />
-        <StageChecklistPanel items={stageChecklistItems} />
-        <ApplicationUnifiedTable
-          applicationId={application.id}
-          requestedDateStatus={application.requested_date_status}
-          rows={unifiedRows}
-        />
+        <ApplicationCardsBoard board={cardsBoard} />
       </div>
     </InternalShell>
   );

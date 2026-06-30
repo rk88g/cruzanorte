@@ -8,6 +8,7 @@ import type {
   ApplicationStatus,
   AvailableDateRow,
   DocumentRow,
+  TravelerMexicoEntryRequirementRow,
   ReceivingContactRow,
   TravelerRow,
   UsCityRow,
@@ -82,6 +83,17 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     | "status"
     | "traveler_id"
   >[];
+  mexico_requirements: Pick<
+    TravelerMexicoEntryRequirementRow,
+    | "id"
+    | "traveler_id"
+    | "requirement_type"
+    | "requirement_name"
+    | "status"
+    | "notes_public"
+    | "notes_internal"
+    | "reviewed_at"
+  >[];
   receiving_contact: (Pick<
     ReceivingContactRow,
     | "address_reference"
@@ -105,11 +117,13 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
     | "full_name"
     | "birth_date"
     | "age"
+    | "country_origin"
     | "nationality"
     | "relationship"
     | "country_code"
     | "phone_number"
     | "whatsapp_e164"
+    | "notes"
     | "is_main_client"
     | "requires_mexico_entry_review"
     | "mexico_entry_status"
@@ -310,7 +324,7 @@ export async function getInternalApplicationDetail(applicationId: string) {
     supabase
       .from("travelers")
       .select(
-        "id, full_name, birth_date, age, nationality, relationship, country_code, phone_number, whatsapp_e164, is_main_client, requires_mexico_entry_review, mexico_entry_status"
+        "id, full_name, birth_date, age, country_origin, nationality, relationship, country_code, phone_number, whatsapp_e164, notes, is_main_client, requires_mexico_entry_review, mexico_entry_status"
       )
       .eq("application_id", application.id)
       .order("created_at", { ascending: true })
@@ -318,6 +332,18 @@ export async function getInternalApplicationDetail(applicationId: string) {
 
   if (travelersResult.error) {
     throw new Error("Could not read travelers.");
+  }
+
+  const { data: mexicoRequirements, error: mexicoRequirementsError } = await supabase
+    .from("traveler_mexico_entry_requirements")
+    .select(
+      "id, traveler_id, requirement_type, requirement_name, status, notes_public, notes_internal, reviewed_at"
+    )
+    .eq("application_id", application.id)
+    .order("created_at", { ascending: true });
+
+  if (mexicoRequirementsError) {
+    throw new Error("Could not read Mexico requirements.");
   }
 
   const { data: receivingContact, error: receivingContactError } = await supabase
@@ -386,6 +412,7 @@ export async function getInternalApplicationDetail(applicationId: string) {
       status: document.status,
       traveler_id: document.traveler_id
     })),
+    mexico_requirements: mexicoRequirements ?? [],
     requested_date: application.requested_date_id
       ? datesById.get(application.requested_date_id) ?? null
       : null,

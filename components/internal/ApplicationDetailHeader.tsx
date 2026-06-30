@@ -79,17 +79,14 @@ export function ApplicationDetailHeader({ application }: ApplicationDetailHeader
             </span>
           </p>
         </div>
-        <div className="w-full rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary lg:w-auto">
-          Avance: {application.progress}%
-        </div>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <HeaderMetric label="ID corto" value={getShortApplicationId(application.id)} />
         <HeaderMetric label="Estado" value={statusLabels[application.status]} />
         <HeaderMetric label="Etapa" value={getStageLabel(application.current_stage)} />
-        <HeaderMetric label="Creacion" value={formatDate(application.created_at)} />
-        <HeaderMetric label="Personas" value={application.total_people} />
+        <HeaderMetric label="Avance" value={`${application.progress}%`} />
+        <HeaderMetric label="Total de personas" value={application.total_people} />
         <HeaderMetric
           label="Fecha solicitada"
           value={formatDateOnly(application.requested_date?.date)}
@@ -98,8 +95,7 @@ export function ApplicationDetailHeader({ application }: ApplicationDetailHeader
           label="Fecha autorizada"
           value={formatDateOnly(application.approved_date?.date)}
         />
-        <HeaderMetric label="Pais de origen" value={application.origin_country ?? "Sin dato"} />
-        <HeaderMetric label="Ciudad de origen" value={application.origin_city ?? "Sin dato"} />
+        <HeaderMetric label="Creacion" value={formatDate(application.created_at)} />
       </div>
     </section>
   );
