@@ -75,7 +75,11 @@ export default async function InternalApplicationDetailPage({
           blockingPayments={blockingPayments}
           currentStage={application.current_stage}
         />
-        <ApplicationCardsBoard board={cardsBoard} />
+        <ApplicationCardsBoard
+          applicationId={application.id}
+          board={cardsBoard}
+          travelers={application.travelers}
+        />
       </div>
     </InternalShell>
   );

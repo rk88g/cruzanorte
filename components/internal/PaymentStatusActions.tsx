@@ -20,8 +20,16 @@ type StatusResponse = {
 const actions: {
   icon: typeof Check;
   label: string;
-  status: Extract<PaymentStatus, "cancelled" | "in_review" | "paid" | "partial" | "rejected">;
+  status: Extract<
+    PaymentStatus,
+    "cancelled" | "in_review" | "paid" | "partial" | "rejected" | "requested"
+  >;
 }[] = [
+  {
+    icon: ClipboardCheck,
+    label: "Marcar solicitado",
+    status: "requested"
+  },
   {
     icon: ClipboardCheck,
     label: "Marcar en revision",

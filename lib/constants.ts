@@ -359,16 +359,16 @@ export const PAYMENT_SCOPES = [
 ] as const;
 
 export const PAYMENT_SCOPE_LABELS = {
-  application: "Solicitud",
+  application: "Solicitud completa",
   group: "Grupo",
-  traveler: "Persona",
-  stage: "Etapa",
+  traveler: "Persona especifica",
+  stage: "Etapa del proceso",
   mexico_entry_requirement: "Requisito Mexico",
   documentation: "Documentacion",
   office_arrival: "Llegada a oficina",
   before_mexico_arrival: "Antes de llegar a Mexico",
-  after_mexico_arrival: "Despues de llegar a Mexico",
-  extra: "Extra",
+  after_mexico_arrival: "Al llegar a Mexico",
+  extra: "Pago extra",
   special_agreement: "Acuerdo especial"
 } as const;
 

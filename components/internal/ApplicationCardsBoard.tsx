@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 import { ApplicationCardGroup } from "@/components/internal/ApplicationCardGroup";
 import { ApplicationDetailModal } from "@/components/internal/ApplicationDetailModal";
+import {
+  CreatePaymentModal,
+  type CreatePaymentTravelerOption
+} from "@/components/internal/CreatePaymentModal";
 import { DocumentPreviewModal } from "@/components/internal/DocumentPreviewModal";
 import { PaymentReceiptModal } from "@/components/internal/PaymentReceiptModal";
 import type {
@@ -16,7 +20,9 @@ import type { PaymentCommitment } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 
 type ApplicationCardsBoardProps = {
+  applicationId: string;
   board: ApplicationCardsBoardData;
+  travelers: CreatePaymentTravelerOption[];
 };
 
 function matchesFilter(card: ApplicationCardItem, filter: ApplicationCardFilter) {
@@ -63,11 +69,20 @@ function filterGroups(groups: ApplicationCardGroupData[], filter: ApplicationCar
       }`,
       items: group.items.filter((item) => matchesFilter(item, filter))
     }))
-    .filter((group) => group.items.length > 0);
+    .filter(
+      (group) =>
+        group.items.length > 0 ||
+        (group.id === "payments" && (filter === "all" || filter === "payments"))
+    );
 }
 
-export function ApplicationCardsBoard({ board }: ApplicationCardsBoardProps) {
+export function ApplicationCardsBoard({
+  applicationId,
+  board,
+  travelers
+}: ApplicationCardsBoardProps) {
   const [activeFilter, setActiveFilter] = useState<ApplicationCardFilter>("all");
+  const [isCreatePaymentOpen, setIsCreatePaymentOpen] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState<ApplicationCardItem | null>(null);
   const [selectedDocument, setSelectedDocument] = useState<ApplicationUnifiedDocument | null>(null);
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentCommitment | null>(
@@ -118,7 +133,14 @@ export function ApplicationCardsBoard({ board }: ApplicationCardsBoardProps) {
       </div>
 
       {visibleGroups.map((group) => (
-        <ApplicationCardGroup group={group} key={group.id} onAction={handleAction} />
+        <ApplicationCardGroup
+          group={group}
+          key={group.id}
+          onAction={handleAction}
+          onCreatePayment={
+            group.id === "payments" ? () => setIsCreatePaymentOpen(true) : undefined
+          }
+        />
       ))}
 
       {visibleGroups.length === 0 ? (
@@ -142,6 +164,13 @@ export function ApplicationCardsBoard({ board }: ApplicationCardsBoardProps) {
         onClose={() => setSelectedReceiptPayment(null)}
         payment={selectedReceiptPayment}
       />
+      {isCreatePaymentOpen ? (
+        <CreatePaymentModal
+          applicationId={applicationId}
+          onClose={() => setIsCreatePaymentOpen(false)}
+          travelers={travelers}
+        />
+      ) : null}
     </section>
   );
 }

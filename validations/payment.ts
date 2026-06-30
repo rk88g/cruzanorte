@@ -11,9 +11,7 @@ const stageValues = APPLICATION_STAGES.map((stage) => stage.slug) as [
   ...ApplicationStage[]
 ];
 
-const paymentScopeValues = PAYMENT_SCOPES.filter(
-  (scope) => scope !== "mexico_entry_requirement"
-) as [PaymentScope, ...PaymentScope[]];
+const paymentScopeValues = PAYMENT_SCOPES as unknown as [PaymentScope, ...PaymentScope[]];
 const paymentStatusValues = PAYMENT_STATUSES as unknown as [
   PaymentStatus,
   ...PaymentStatus[]
@@ -56,7 +54,7 @@ export const internalPaymentCreateSchema = z
     amount: z.coerce.number().positive("Ingresa un monto mayor a cero."),
     blocks_progress: z.coerce.boolean().default(false),
     concept: z.string().trim().min(2, "Ingresa el concepto.").max(160),
-    currency: z.string().trim().min(3).max(3).default("MXN"),
+    currency: z.enum(["MXN", "USD"]).default("MXN"),
     description: optionalTextSchema,
     discount_amount: optionalNumberSchema.default(0),
     discount_percentage: optionalNumberSchema,
@@ -87,11 +85,30 @@ export const internalPaymentCreateSchema = z
       });
     }
 
+    if (value.is_financed && !value.financing_months) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ingresa los meses de financiamiento.",
+        path: ["financing_months"]
+      });
+    }
+
     if (!value.is_financed && value.financing_months) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Marca financiamiento para usar meses.",
         path: ["financing_months"]
+      });
+    }
+
+    if (
+      value.discount_percentage !== undefined &&
+      (value.discount_percentage < 0 || value.discount_percentage > 100)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El descuento en porcentaje debe estar entre 0 y 100.",
+        path: ["discount_percentage"]
       });
     }
   });

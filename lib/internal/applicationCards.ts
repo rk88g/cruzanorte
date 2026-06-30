@@ -438,6 +438,7 @@ function buildPaymentCards(payments: PaymentCommitment[]): ApplicationCardItem[]
     relatedId: payment.id,
     responsible: payment.status === "paid" ? "Sistema" : "Cliente",
     secondaryDetails: [
+      { label: "Alcance", value: payment.scope_label },
       { label: "Moneda", value: payment.currency },
       { label: "Fecha limite", value: formatDate(payment.due_date) },
       { label: "Etapa relacionada", value: getStageLabel(payment.stage) },
@@ -778,7 +779,7 @@ export function buildApplicationCards(
         summary: `${mexicoRequirementCards.length} requisito(s)`,
         title: "Requisitos Mexico"
       })
-    ].filter((group) => group.items.length > 0),
+    ].filter((group) => group.items.length > 0 || group.id === "payments"),
     summary: buildSummary({
       application,
       documentCards,
