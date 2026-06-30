@@ -2,6 +2,7 @@ import { CreditCard, FileText, MessageSquareText, UserRound, ClipboardList } fro
 import Link from "next/link";
 import type { ClientActiveApplication } from "@/lib/applications";
 import { CLIENT_ROUTES } from "@/lib/routes";
+import { getClientStageOverviewContent, isDocumentationStageOpen } from "@/lib/stages";
 
 const QUICK_ACTIONS = [
   {
@@ -37,9 +38,16 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
   const receivingContactIsComplete = Boolean(activeApplication?.receiving_contact_exists);
   const hasDate = Boolean(activeApplication?.requested_date_id || activeApplication?.approved_date_id);
   const hasApprovedDate = activeApplication?.requested_date_status === "approved";
+  const isAfterDocumentation =
+    activeApplication ? !isDocumentationStageOpen(activeApplication.current_stage) : false;
+  const stageOverview = activeApplication
+    ? getClientStageOverviewContent(activeApplication.current_stage)
+    : null;
   const firstActionHref = !activeApplication
     ? CLIENT_ROUTES.registro
-    : !travelersAreComplete
+    : isAfterDocumentation
+      ? CLIENT_ROUTES.llegadaOficina
+      : !travelersAreComplete
       ? CLIENT_ROUTES.personas
       : !receivingContactIsComplete
         ? CLIENT_ROUTES.contactoRecibe
@@ -47,12 +55,14 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
           ? CLIENT_ROUTES.documentacion
         : CLIENT_ROUTES.contactoRecibe;
   const resolvedFirstActionHref =
-    activeApplication && travelersAreComplete && receivingContactIsComplete && !hasApprovedDate
+    activeApplication && !isAfterDocumentation && travelersAreComplete && receivingContactIsComplete && !hasApprovedDate
       ? CLIENT_ROUTES.fecha
       : firstActionHref;
   const firstActionTitle = !activeApplication
     ? "Iniciar registro"
-    : !travelersAreComplete
+    : isAfterDocumentation
+      ? (stageOverview?.title ?? "Etapa actual")
+      : !travelersAreComplete
       ? "Agregar personas"
       : !receivingContactIsComplete
         ? "Contacto que recibe"
@@ -61,7 +71,9 @@ export function QuickActions({ activeApplication }: QuickActionsProps) {
           : "Fechas disponibles";
   const firstActionDescription = !activeApplication
     ? "Informacion inicial del proceso guiado."
-    : !travelersAreComplete
+    : isAfterDocumentation
+      ? (stageOverview?.statusLabel ?? "Seguimiento activo")
+      : !travelersAreComplete
       ? "Personas incluidas en el proceso guiado."
       : !receivingContactIsComplete
         ? "Informacion del destino aproximado."

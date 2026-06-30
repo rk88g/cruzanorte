@@ -36,10 +36,7 @@ export function DocumentUploadForm({ applicationId, requirement }: DocumentUploa
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const canUpload =
-    requirement.status === "pending" ||
-    requirement.status === "rejected" ||
-    requirement.status === "replacement_requested";
+  const canUpload = requirement.can_upload;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

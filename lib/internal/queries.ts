@@ -44,6 +44,7 @@ type InternalApplication = Pick<
   | "approved_date_id"
   | "requested_date_status"
   | "requested_date_notes"
+  | "notes_internal"
   | "notes_public"
   | "created_at"
   | "updated_at"
@@ -117,7 +118,7 @@ export type InternalApplicationDetail = InternalApplicationListItem & {
 };
 
 const APPLICATION_SELECT =
-  "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, arrival_country, arrival_city, requested_date_id, approved_date_id, requested_date_status, requested_date_notes, notes_public, created_at, updated_at";
+  "id, client_id, main_contact_name, current_stage, progress, status, total_people, origin_country, origin_city, arrival_country, arrival_city, requested_date_id, approved_date_id, requested_date_status, requested_date_notes, notes_internal, notes_public, created_at, updated_at";
 
 const CLIENT_SELECT =
   "id, full_name, email, country_code, phone_number, whatsapp_e164, status, created_at";
@@ -305,7 +306,7 @@ export async function getInternalApplicationDetail(applicationId: string) {
   const [clientsById, datesById, documentSummary, travelersResult] = await Promise.all([
     getClientsById([application.client_id]),
     getDatesById([application.requested_date_id ?? "", application.approved_date_id ?? ""]),
-    getApplicationDocumentSummary(application.id),
+    getApplicationDocumentSummary(application.id, application.current_stage),
     supabase
       .from("travelers")
       .select(

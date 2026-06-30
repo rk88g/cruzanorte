@@ -9,6 +9,10 @@ import {
 } from "@/lib/constants";
 import type { InternalApplicationDetail } from "@/lib/internal/queries";
 import type { PaymentCommitment } from "@/lib/payments";
+import {
+  getInternalStageChecklist,
+  shouldShowAutomaticDocumentRequirements
+} from "@/lib/stages";
 import type { DocumentStatus } from "@/types/database";
 
 export type UnifiedRowStatus =
@@ -69,6 +73,14 @@ export type ApplicationUnifiedRow = {
   responsible: "Cliente" | "Interno" | "Sistema";
   status: UnifiedRowStatus;
   type: string;
+};
+
+export type ApplicationStageChecklistItem = {
+  completed: boolean;
+  detail: string;
+  id: string;
+  label: string;
+  statusLabel: "Completo" | "Pendiente";
 };
 
 type TravelerDetail = InternalApplicationDetail["travelers"][number];
@@ -150,6 +162,24 @@ function getDocumentActionLabel(status: DocumentStatus, hasFile: boolean) {
   }
 
   return "Ver archivo";
+}
+
+function getUnifiedDocumentLabel(documentType: string) {
+  if (documentType in GENERAL_DOCUMENT_LABELS) {
+    return GENERAL_DOCUMENT_LABELS[documentType as keyof typeof GENERAL_DOCUMENT_LABELS];
+  }
+
+  if (documentType in TRAVELER_DOCUMENT_LABELS) {
+    return TRAVELER_DOCUMENT_LABELS[documentType as keyof typeof TRAVELER_DOCUMENT_LABELS];
+  }
+
+  if (documentType in MEXICO_REVIEW_DOCUMENT_LABELS) {
+    return MEXICO_REVIEW_DOCUMENT_LABELS[
+      documentType as keyof typeof MEXICO_REVIEW_DOCUMENT_LABELS
+    ];
+  }
+
+  return documentType;
 }
 
 function findDocument(
@@ -447,12 +477,158 @@ function appendPaymentRows(rows: ApplicationUnifiedRow[], payments: PaymentCommi
   });
 }
 
+function appendRealDocumentRows({
+  application,
+  rows,
+  travelerIdentifiers
+}: {
+  application: InternalApplicationDetail;
+  rows: ApplicationUnifiedRow[];
+  travelerIdentifiers: Map<string, { base: string; display: string }>;
+}) {
+  application.documents.forEach((document, index) => {
+    const traveler = document.traveler_id
+      ? application.travelers.find((item) => item.id === document.traveler_id)
+      : null;
+    const documentLabel = getUnifiedDocumentLabel(document.document_type);
+    const identifier = document.traveler_id
+      ? travelerIdentifiers.get(document.traveler_id)?.base ?? "V-00"
+      : document.mexico_requirement_id
+        ? "MX"
+        : "SOL";
+    const type = document.mexico_requirement_id
+      ? "Requisito Mexico"
+      : document.traveler_id
+        ? "Documento"
+        : "Documento general";
+
+    rows.push(
+      makeDocumentRow({
+        document,
+        documentLabel,
+        id: `document-real-${document.id}`,
+        identifier: `${identifier}-${String(index + 1).padStart(2, "0")}`,
+        nameOrReference: traveler?.full_name ?? "Solicitud",
+        type
+      })
+    );
+  });
+}
+
+function hasBlockingPendingPayment(payments: PaymentCommitment[]) {
+  return payments.some((payment) => payment.blocks_progress && payment.status !== "paid");
+}
+
+function hasReceiptInReview(payments: PaymentCommitment[]) {
+  return payments.some(
+    (payment) =>
+      payment.status === "in_review" ||
+      payment.latest_receipt?.status === "uploaded" ||
+      payment.latest_receipt?.status === "in_review"
+  );
+}
+
+function resolveChecklistCompletion({
+  application,
+  itemId,
+  payments
+}: {
+  application: InternalApplicationDetail;
+  itemId: string;
+  payments: PaymentCommitment[];
+}) {
+  const travelersComplete = application.travelers.length >= application.total_people;
+  const hasReceivingContact = Boolean(application.receiving_contact);
+  const hasDate = Boolean(application.approved_date_id || application.requested_date_id);
+  const hasCoreData = [
+    application.main_contact_name,
+    application.origin_country,
+    application.origin_city,
+    application.total_people
+  ].every(hasValue);
+  const noBlockingPendingPayments = !hasBlockingPendingPayment(payments);
+  const noReceiptsInReview = !hasReceiptInReview(payments);
+
+  const completedById: Record<string, boolean> = {
+    "active-follow-up": true,
+    "application-closed": application.status === "completed",
+    "arrival-confirmed": true,
+    "closure-evidence": false,
+    "date-base-confirmed": hasDate,
+    "destination-confirmed": application.current_stage === "en_destino" || application.current_stage === "bienvenido",
+    "destination-data-reviewed": hasReceivingContact,
+    "documents-payments-reviewed": noBlockingPendingPayments,
+    "final-observations": Boolean(application.notes_internal || application.requested_date_notes),
+    "general-status-updated": true,
+    "group-ready": travelersComplete,
+    "identity-reviewed": travelersComplete,
+    "internal-observations": Boolean(application.notes_internal || application.requested_date_notes),
+    "internal-owner": false,
+    "main-data-reviewed": hasCoreData,
+    "payments-reviewed": noBlockingPendingPayments,
+    "process-finished": application.current_stage === "bienvenido",
+    "ready-to-close": application.current_stage === "en_destino" && noBlockingPendingPayments,
+    "receipt-reviewed": noReceiptsInReview,
+    "receiving-contact-confirmed": hasReceivingContact,
+    "review-requested": false,
+    "travelers-present": travelersComplete
+  };
+
+  return completedById[itemId] ?? false;
+}
+
+export function buildApplicationStageChecklist(
+  application: InternalApplicationDetail,
+  payments: PaymentCommitment[] = []
+): ApplicationStageChecklistItem[] {
+  return getInternalStageChecklist(application.current_stage).map((item) => {
+    const completed = resolveChecklistCompletion({
+      application,
+      itemId: item.id,
+      payments
+    });
+
+    return {
+      completed,
+      detail: item.detail,
+      id: item.id,
+      label: item.label,
+      statusLabel: completed ? "Completo" : "Pendiente"
+    };
+  });
+}
+
+function appendStageChecklistRows(
+  rows: ApplicationUnifiedRow[],
+  checklistItems: ApplicationStageChecklistItem[]
+) {
+  checklistItems.forEach((item, index) => {
+    rows.push({
+      actionLabel: "Revisar",
+      actionType: "none",
+      detail: item.detail,
+      id: `stage-check-${item.id}`,
+      identifier: `CHK-${String(index + 1).padStart(2, "0")}`,
+      mainData: item.label,
+      nameOrReference: "Checklist de etapa",
+      priority: item.completed ? "Baja" : "Media",
+      responsible: "Interno",
+      status: item.completed ? "Completo" : "Pendiente",
+      type: "Checklist interno"
+    });
+  });
+}
+
 export function buildApplicationUnifiedRows(
   application: InternalApplicationDetail,
   payments: PaymentCommitment[] = []
 ): ApplicationUnifiedRow[] {
   const travelerIdentifiers = buildTravelerIdentifierMap(application.travelers);
   const rows: ApplicationUnifiedRow[] = [];
+  const stageChecklistItems = buildApplicationStageChecklist(application, payments);
+  const showAutomaticDocumentRows = shouldShowAutomaticDocumentRequirements(
+    application.current_stage
+  );
 
   application.travelers.forEach((traveler, index) => {
     const status = getTravelerStatus(traveler);
@@ -543,75 +719,84 @@ export function buildApplicationUnifiedRows(
     rows.push(buildDateRow(application));
   }
 
-  for (const documentType of REQUIRED_GENERAL_DOCUMENT_TYPES) {
-    rows.push(
-      makeDocumentRow({
-        document: findDocument(application, { documentType }),
-        documentLabel: GENERAL_DOCUMENT_LABELS[documentType],
-        id: `document-general-${documentType}`,
-        identifier: "SOL",
-        nameOrReference: "Solicitud",
-        type: "Documento general"
-      })
-    );
-  }
-
-  for (const traveler of application.travelers) {
-    const identifier = travelerIdentifiers.get(traveler.id)?.base ?? "V-00";
-    const nameOrReference = traveler.full_name || "Viajero sin nombre";
-
-    for (const documentType of REQUIRED_TRAVELER_DOCUMENT_TYPES) {
+  if (showAutomaticDocumentRows) {
+    for (const documentType of REQUIRED_GENERAL_DOCUMENT_TYPES) {
       rows.push(
         makeDocumentRow({
-          document: findDocument(application, {
-            documentType,
-            travelerId: traveler.id
-          }),
-          documentLabel: TRAVELER_DOCUMENT_LABELS[documentType],
-          id: `document-traveler-${traveler.id}-${documentType}`,
-          identifier,
-          nameOrReference,
-          type: "Documento"
+          document: findDocument(application, { documentType }),
+          documentLabel: GENERAL_DOCUMENT_LABELS[documentType],
+          id: `document-general-${documentType}`,
+          identifier: "SOL",
+          nameOrReference: "Solicitud",
+          type: "Documento general"
         })
       );
     }
 
-    if (traveler.requires_mexico_entry_review) {
-      rows.push({
-        actionLabel: "Revisar",
-        actionType: "review_requirement",
-        detail: "Requiere validar documentacion previa",
-        id: `mexico-review-${traveler.id}`,
-        identifier,
-        mainData: "Revision documental Mexico",
-        nameOrReference,
-        priority: "Media",
-        relatedId: traveler.id,
-        responsible: "Interno",
-        status: getMexicoRequirementStatus(application, traveler.id),
-        type: "Requisito Mexico"
-      });
+    for (const traveler of application.travelers) {
+      const identifier = travelerIdentifiers.get(traveler.id)?.base ?? "V-00";
+      const nameOrReference = traveler.full_name || "Viajero sin nombre";
 
-      for (const documentType of MEXICO_REVIEW_DOCUMENT_TYPES) {
+      for (const documentType of REQUIRED_TRAVELER_DOCUMENT_TYPES) {
         rows.push(
           makeDocumentRow({
             document: findDocument(application, {
               documentType,
-              isMexico: true,
               travelerId: traveler.id
             }),
-            documentLabel: MEXICO_REVIEW_DOCUMENT_LABELS[documentType],
-            id: `document-mexico-${traveler.id}-${documentType}`,
+            documentLabel: TRAVELER_DOCUMENT_LABELS[documentType],
+            id: `document-traveler-${traveler.id}-${documentType}`,
             identifier,
             nameOrReference,
-            type: "Requisito Mexico"
+            type: "Documento"
           })
         );
       }
+
+      if (traveler.requires_mexico_entry_review) {
+        rows.push({
+          actionLabel: "Revisar",
+          actionType: "review_requirement",
+          detail: "Requiere validar documentacion previa",
+          id: `mexico-review-${traveler.id}`,
+          identifier,
+          mainData: "Revision documental Mexico",
+          nameOrReference,
+          priority: "Media",
+          relatedId: traveler.id,
+          responsible: "Interno",
+          status: getMexicoRequirementStatus(application, traveler.id),
+          type: "Requisito Mexico"
+        });
+
+        for (const documentType of MEXICO_REVIEW_DOCUMENT_TYPES) {
+          rows.push(
+            makeDocumentRow({
+              document: findDocument(application, {
+                documentType,
+                isMexico: true,
+                travelerId: traveler.id
+              }),
+              documentLabel: MEXICO_REVIEW_DOCUMENT_LABELS[documentType],
+              id: `document-mexico-${traveler.id}-${documentType}`,
+              identifier,
+              nameOrReference,
+              type: "Requisito Mexico"
+            })
+          );
+        }
+      }
     }
+  } else {
+    appendRealDocumentRows({
+      application,
+      rows,
+      travelerIdentifiers
+    });
   }
 
   appendPaymentRows(rows, payments);
+  appendStageChecklistRows(rows, stageChecklistItems);
 
   return rows;
 }

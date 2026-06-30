@@ -1,5 +1,4 @@
 import {
-  APPLICATION_STAGES,
   DOCUMENT_STATUS_DESCRIPTIONS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENTATION_PROGRESS,
@@ -14,6 +13,11 @@ import {
   TRAVELER_DOCUMENT_LABELS
 } from "@/lib/constants";
 import { getActiveApplicationForClient } from "@/lib/applications";
+import {
+  isDocumentationStageOpen,
+  shouldShowAutomaticDocumentRequirements,
+  shouldShowDocumentUploadForm
+} from "@/lib/stages";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   createDocumentSignedUrl,
@@ -101,6 +105,7 @@ export type ClientDocument = Pick<
 >;
 
 export type ClientDocumentRequirement = {
+  can_upload: boolean;
   document: ClientDocument | null;
   document_type: string;
   key: string;
@@ -247,8 +252,10 @@ function makeRequirement({
   label,
   mexicoRequirementId = null,
   scope,
+  currentStage,
   travelerId = null
 }: {
+  currentStage: ApplicationStage;
   document: DocumentRow | null;
   documentType: string;
   key: string;
@@ -264,6 +271,10 @@ function makeRequirement({
     document_type: documentType,
     key,
     label,
+    can_upload: shouldShowDocumentUploadForm({
+      currentStage,
+      document
+    }),
     mexico_requirement_id: mexicoRequirementId,
     scope,
     status,
@@ -405,15 +416,6 @@ async function getMexicoRequirementsForApplication(applicationId: string) {
   return data ?? [];
 }
 
-function isAfterDocumentationStage(stage: ApplicationStage) {
-  const documentationIndex = APPLICATION_STAGES.findIndex(
-    (item) => item.slug === DOCUMENTATION_STAGE
-  );
-  const currentIndex = APPLICATION_STAGES.findIndex((item) => item.slug === stage);
-
-  return currentIndex > documentationIndex;
-}
-
 function filterSuggestedRequirements({
   includeSuggestedDocuments,
   requirements
@@ -429,11 +431,13 @@ function filterSuggestedRequirements({
 }
 
 function buildClientRequirements({
+  currentStage,
   documents,
   includeSuggestedDocuments,
   mexicoRequirements,
   travelers
 }: {
+  currentStage: ApplicationStage;
   documents: DocumentRow[];
   includeSuggestedDocuments: boolean;
   mexicoRequirements: TravelerMexicoEntryRequirementRow[];
@@ -443,6 +447,7 @@ function buildClientRequirements({
     includeSuggestedDocuments,
     requirements: REQUIRED_GENERAL_DOCUMENT_TYPES.map((documentType) =>
       makeRequirement({
+        currentStage,
         document: findLatestDocument(documents, {
           documentType,
           scope: "application"
@@ -462,6 +467,7 @@ function buildClientRequirements({
         includeSuggestedDocuments,
         requirements: REQUIRED_TRAVELER_DOCUMENT_TYPES.map((documentType) =>
           makeRequirement({
+            currentStage,
             document: findLatestDocument(documents, {
               documentType,
               scope: "traveler",
@@ -492,6 +498,7 @@ function buildClientRequirements({
           );
 
           return makeRequirement({
+            currentStage,
             document: findLatestDocument(documents, {
               documentType,
               mexicoRequirementId: mexicoRequirement?.id,
@@ -548,12 +555,15 @@ export async function getClientDocumentationSetup(clientId: string) {
     getMexicoRequirementsForApplication(activeApplication.id)
   ]);
   const documentationStageState = {
-    is_after_documentation: isAfterDocumentationStage(activeApplication.current_stage),
-    is_documentation_open: !isAfterDocumentationStage(activeApplication.current_stage)
+    is_after_documentation: !isDocumentationStageOpen(activeApplication.current_stage),
+    is_documentation_open: isDocumentationStageOpen(activeApplication.current_stage)
   };
   const requirements = buildClientRequirements({
+    currentStage: activeApplication.current_stage,
     documents,
-    includeSuggestedDocuments: documentationStageState.is_documentation_open,
+    includeSuggestedDocuments: shouldShowAutomaticDocumentRequirements(
+      activeApplication.current_stage
+    ),
     mexicoRequirements,
     travelers
   });
@@ -837,10 +847,10 @@ export async function uploadDocumentForClient(
   }
 
   if (
-    isAfterDocumentationStage(activeApplication.current_stage) &&
-    (!existingDocument ||
-      (existingDocument.status !== "rejected" &&
-        existingDocument.status !== "replacement_requested"))
+    !shouldShowDocumentUploadForm({
+      currentStage: activeApplication.current_stage,
+      document: existingDocument
+    })
   ) {
     return {
       status: "not_allowed",
@@ -1172,15 +1182,19 @@ export async function updateInternalDocumentStatus(
   };
 }
 
-export async function getApplicationDocumentSummary(applicationId: string) {
+export async function getApplicationDocumentSummary(
+  applicationId: string,
+  currentStage: ApplicationStage = DOCUMENTATION_STAGE
+) {
   const [travelers, documents, mexicoRequirements] = await Promise.all([
     getTravelersForApplication(applicationId),
     getDocumentsForApplication(applicationId),
     getMexicoRequirementsForApplication(applicationId)
   ]);
   const requirements = buildClientRequirements({
+    currentStage,
     documents,
-    includeSuggestedDocuments: true,
+    includeSuggestedDocuments: shouldShowAutomaticDocumentRequirements(currentStage),
     mexicoRequirements,
     travelers
   });

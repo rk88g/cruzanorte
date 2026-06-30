@@ -1,122 +1,14 @@
 import { ArrowRight, Clock3 } from "lucide-react";
 import Link from "next/link";
 import type { ClientActiveApplication } from "@/lib/applications";
-import { CLIENT_ROUTES } from "@/lib/routes";
+import { getClientNextStep } from "@/lib/stages";
 
 type NextStepCardProps = {
   activeApplication: ClientActiveApplication | null;
 };
 
-type NextStepContent = {
-  actionHref?: string;
-  actionLabel: string;
-  description: string;
-  title: string;
-};
-
-function getNextStepContent(
-  activeApplication: ClientActiveApplication | null
-): NextStepContent {
-  if (!activeApplication) {
-    return {
-      title: "Inicia tu registro",
-      description: "Completa tu informacion inicial para comenzar a organizar tu proceso.",
-      actionLabel: "Comenzar registro",
-      actionHref: CLIENT_ROUTES.registro
-    };
-  }
-
-  if (activeApplication.travelers_count < activeApplication.total_people) {
-    return {
-      title: "Agrega las personas que viajan",
-      description: "Completa la informacion de las personas incluidas en tu proceso.",
-      actionLabel: "Agregar personas",
-      actionHref: CLIENT_ROUTES.personas
-    };
-  }
-
-  if (!activeApplication.receiving_contact_exists) {
-    return {
-      title: "Agrega el contacto que recibe",
-      description:
-        "Registra la informacion de la persona que recibira al grupo en Estados Unidos.",
-      actionLabel: "Agregar contacto",
-      actionHref: CLIENT_ROUTES.contactoRecibe
-    };
-  }
-
-  if (activeApplication.requested_date_status === "approved") {
-    if (
-      activeApplication.document_replacement_requested_count > 0 ||
-      activeApplication.document_rejected_count > 0
-    ) {
-      return {
-        title: "Reemplazo de documento pendiente",
-        description:
-          "Revisa los comentarios y sube una nueva version del documento solicitado.",
-        actionLabel: "Revisar documentacion",
-        actionHref: CLIENT_ROUTES.documentacion
-      };
-    }
-
-    if (
-      activeApplication.required_document_count > 0 &&
-      activeApplication.document_accepted_count >= activeApplication.required_document_count
-    ) {
-      return {
-        title: "Revision de expediente",
-        description:
-          "Tu documentacion fue revisada. El siguiente paso sera la revision del expediente.",
-        actionLabel: "Disponible proximamente"
-      };
-    }
-
-    if (activeApplication.document_pending_review_count > 0) {
-      return {
-        title: "Documentacion en revision",
-        description: "Tus documentos fueron recibidos y estan en revision.",
-        actionLabel: "Revisar documentacion",
-        actionHref: CLIENT_ROUTES.documentacion
-      };
-    }
-
-    return {
-      title: "Sube tu documentacion",
-      description: "Carga los documentos solicitados para que puedan ser revisados.",
-      actionLabel: "Revisar documentacion",
-      actionHref: CLIENT_ROUTES.documentacion
-    };
-  }
-
-  if (activeApplication.requested_date_status === "requested") {
-    return {
-      title: "Fecha en revision",
-      description:
-        "Tu fecha fue enviada para revision. Te avisaremos cuando sea autorizada.",
-      actionLabel: "Ver fechas disponibles",
-      actionHref: CLIENT_ROUTES.fecha
-    };
-  }
-
-  if (activeApplication.requested_date_status === "rejected") {
-    return {
-      title: "Solicita una nueva fecha",
-      description: "La fecha anterior no fue autorizada. Puedes seleccionar otra fecha disponible.",
-      actionLabel: "Ver fechas disponibles",
-      actionHref: CLIENT_ROUTES.fecha
-    };
-  }
-
-  return {
-    title: "Solicita una fecha",
-    description: "Selecciona una fecha disponible para enviarla a revision.",
-    actionLabel: "Ver fechas disponibles",
-    actionHref: CLIENT_ROUTES.fecha
-  };
-}
-
 export function NextStepCard({ activeApplication }: NextStepCardProps) {
-  const content = getNextStepContent(activeApplication);
+  const content = getClientNextStep(activeApplication);
 
   return (
     <article className="rounded-2xl border border-border bg-card p-5 shadow-premium backdrop-blur-xl sm:p-6">

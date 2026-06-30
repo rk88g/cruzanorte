@@ -191,6 +191,41 @@ export async function getClientDateRequestSetup(clientId: string) {
   };
 }
 
+export async function getClientApplicationDateSummary(
+  clientId: string,
+  applicationId: string
+) {
+  const supabase = createSupabaseAdminClient();
+  const { data: application, error: applicationError } = await supabase
+    .from("applications")
+    .select("id, client_id, requested_date_id, approved_date_id")
+    .eq("id", applicationId)
+    .eq("client_id", clientId)
+    .maybeSingle();
+
+  if (applicationError) {
+    throw new Error("Could not read application date summary.");
+  }
+
+  const dateId = application?.approved_date_id ?? application?.requested_date_id;
+
+  if (!dateId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("available_dates")
+    .select(CLIENT_AVAILABLE_DATE_SELECT)
+    .eq("id", dateId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not read client application date.");
+  }
+
+  return data;
+}
+
 export async function requestAvailableDateForClient(
   clientId: string,
   availableDateId: string

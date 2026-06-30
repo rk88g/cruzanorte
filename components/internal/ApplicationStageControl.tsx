@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { APPLICATION_STAGES } from "@/lib/constants";
 import type { PaymentCommitment } from "@/lib/payments";
+import { isStageAtOrAfter } from "@/lib/stages";
 import type { ApplicationStage } from "@/types/database";
 
 type ApplicationStageControlProps = {
@@ -37,12 +38,14 @@ export function ApplicationStageControl({
   );
   const currentStageConfig = APPLICATION_STAGES.find((stage) => stage.slug === currentStage);
   const hasBlockingPendingPayments = blockingPayments.length > 0;
+  const shouldRequireBlockingPaymentNote =
+    hasBlockingPendingPayments && isStageAtOrAfter(selectedStage, "llegada_oficina");
 
   async function handleSubmit() {
     setError(null);
     setMessage(null);
 
-    if (hasBlockingPendingPayments && !note.trim()) {
+    if (shouldRequireBlockingPaymentNote && !note.trim()) {
       setError("Agrega el motivo para avanzar con pago pendiente.");
       return;
     }
@@ -54,7 +57,7 @@ export function ApplicationStageControl({
       )
       .join("\n");
     const confirmed = window.confirm(
-      hasBlockingPendingPayments
+      shouldRequireBlockingPaymentNote
         ? `Esta solicitud tiene pagos pendientes que bloquean el avance.\n\n${blockingPaymentDetail}\n\nDeseas avanzar de todos modos?`
         : "Seguro que deseas cambiar la etapa de esta solicitud?"
     );
@@ -74,7 +77,9 @@ export function ApplicationStageControl({
         body: JSON.stringify({
           current_stage: selectedStage,
           note,
-          pending_payment_ids: blockingPayments.map((payment) => payment.id)
+          pending_payment_ids: shouldRequireBlockingPaymentNote
+            ? blockingPayments.map((payment) => payment.id)
+            : []
         })
       });
       const result = (await response.json()) as StageResponse;
@@ -116,7 +121,7 @@ export function ApplicationStageControl({
         </div>
       </div>
 
-      {hasBlockingPendingPayments ? (
+      {shouldRequireBlockingPaymentNote ? (
         <div className="mt-5">
           <Alert variant="danger">
             Esta solicitud tiene pagos pendientes que bloquean el avance. Para avanzar de
@@ -157,7 +162,7 @@ export function ApplicationStageControl({
 
         <div>
           <label className="text-sm font-medium text-foreground" htmlFor="stage-note">
-            Nota interna opcional
+            {shouldRequireBlockingPaymentNote ? "Nota interna obligatoria" : "Nota interna opcional"}
           </label>
           <textarea
             autoComplete="off"

@@ -20,7 +20,8 @@ export const CLIENT_ROUTES = {
   personas: "/panel/personas",
   contactoRecibe: "/panel/contacto-recibe",
   fecha: "/panel/fecha",
-  documentacion: "/panel/documentacion"
+  documentacion: "/panel/documentacion",
+  llegadaOficina: "/panel/llegada-oficina"
 } as const;
 
 export const PUBLIC_NAVIGATION: NavigationItem[] = [

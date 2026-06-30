@@ -32,10 +32,7 @@ export function DocumentRequirementCard({
   applicationId,
   requirement
 }: DocumentRequirementCardProps) {
-  const canUpload =
-    requirement.status === "pending" ||
-    requirement.status === "rejected" ||
-    requirement.status === "replacement_requested";
+  const canUpload = requirement.can_upload;
   const hasLockedDocument =
     requirement.document &&
     (requirement.status === "uploaded" ||

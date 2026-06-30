@@ -79,8 +79,8 @@ export function DocumentsPanel({
             Documentacion revisada para esta etapa
           </p>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Tu documentacion ya fue revisada para continuar con el proceso. Si el equipo
-            necesita algun reemplazo o documento adicional, aparecera aqui.
+            Esta etapa documental ya fue revisada. Solo veras aqui documentos cargados,
+            reemplazos solicitados o compromisos pendientes relacionados con tu proceso.
           </p>
         </section>
       ) : null}

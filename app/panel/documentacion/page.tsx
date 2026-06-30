@@ -133,8 +133,9 @@ export default async function ClientDocumentationPage() {
                 Documentacion
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-                Sube la documentacion solicitada para mantener tu proceso organizado. Cada
-                archivo sera revisado y podras ver su estado desde este panel.
+                {documentationStageState.is_after_documentation
+                  ? "Consulta documentos cargados, reemplazos solicitados y compromisos pendientes relacionados con tu proceso."
+                  : "Sube la documentacion solicitada para mantener tu proceso organizado. Cada archivo sera revisado y podras ver su estado desde este panel."}
               </p>
             </div>
             <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">

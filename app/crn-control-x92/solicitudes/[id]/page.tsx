@@ -7,7 +7,11 @@ import { ApplicationTimelineBar } from "@/components/internal/ApplicationTimelin
 import { ApplicationUnifiedTable } from "@/components/internal/ApplicationUnifiedTable";
 import { ApplicationPaymentsPanel } from "@/components/internal/ApplicationPaymentsPanel";
 import { InternalShell } from "@/components/internal/InternalShell";
-import { buildApplicationUnifiedRows } from "@/lib/internal/applicationDetail";
+import { StageChecklistPanel } from "@/components/internal/StageChecklistPanel";
+import {
+  buildApplicationStageChecklist,
+  buildApplicationUnifiedRows
+} from "@/lib/internal/applicationDetail";
 import { getInternalApplicationDetail } from "@/lib/internal/queries";
 import { INTERNAL_ROUTES } from "@/lib/internal/routes";
 import { getInternalSession } from "@/lib/internal/session";
@@ -52,6 +56,7 @@ export default async function InternalApplicationDetailPage({
   );
   const hasBlockingPayments = hasBlockingPendingPayments(payments);
   const unifiedRows = buildApplicationUnifiedRows(application, payments);
+  const stageChecklistItems = buildApplicationStageChecklist(application, payments);
 
   return (
     <InternalShell
@@ -82,6 +87,7 @@ export default async function InternalApplicationDetailPage({
           payments={payments}
           travelers={application.travelers}
         />
+        <StageChecklistPanel items={stageChecklistItems} />
         <ApplicationUnifiedTable
           applicationId={application.id}
           requestedDateStatus={application.requested_date_status}
